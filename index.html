@@ -35,18 +35,10 @@
             height: 100dvh;
             touch-action: none;
         }
-        .safe-top {
-            padding-top: max(0.65rem, env(safe-area-inset-top));
-        }
-        .safe-bottom {
-            padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
-        }
-        .safe-left {
-            padding-left: max(0.65rem, env(safe-area-inset-left));
-        }
-        .safe-right {
-            padding-right: max(0.65rem, env(safe-area-inset-right));
-        }
+        .safe-top { padding-top: max(0.65rem, env(safe-area-inset-top)); }
+        .safe-bottom { padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }
+        .safe-left { padding-left: max(0.65rem, env(safe-area-inset-left)); }
+        .safe-right { padding-right: max(0.65rem, env(safe-area-inset-right)); }
         .btn-roblox {
             transition: transform 0.08s ease, box-shadow 0.08s ease;
             box-shadow: 0 4px 0 rgba(15, 23, 42, 0.28);
@@ -91,7 +83,7 @@
     <!-- ======================================================================== -->
     <div id="hud-layer" class="hidden fixed inset-0 pointer-events-none z-20">
         <!-- BAR KIRI ATAS: Profil, Badge Kelas, HP, Stamina, XP, Level, Koin -->
-        <div class="fixed top-0 left-0 safe-top safe-left flex flex-col gap-1.5 pointer-events-auto max-w-[235px] sm:max-w-md">
+        <div class="fixed top-0 left-0 safe-top safe-left flex flex-col gap-1.5 pointer-events-auto max-w-[240px] sm:max-w-md">
             <div class="glass-hud rounded-2xl p-2 sm:p-3 text-white shadow-xl">
                 <div class="flex flex-wrap items-center justify-between gap-1.5 mb-1.5 sm:mb-2">
                     <div class="flex items-center gap-1.5 sm:gap-2">
@@ -112,13 +104,13 @@
                     </div>
                     <!-- Tombol Aksi Cepat -->
                     <div class="flex items-center gap-1">
-                        <button id="btn-hud-rapor" title="Rapor Belajar" class="btn-roblox bg-emerald-500 hover:bg-emerald-400 text-white font-bold px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl text-[10px] sm:text-xs border border-emerald-200">
-                            📊 <span class="hidden xs:inline">Rapor</span>
+                        <button id="btn-hud-rapor" type="button" title="Rapor Belajar" class="btn-roblox bg-emerald-500 hover:bg-emerald-400 text-white font-bold px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl text-[10px] sm:text-xs border border-emerald-200">
+                            📊 <span class="hidden sm:inline">Rapor</span>
                         </button>
-                        <button id="btn-hud-klasmen" title="Klasmen" class="btn-roblox bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl text-[10px] sm:text-xs border border-amber-200">
-                            🏆 <span class="hidden xs:inline">Klasmen</span>
+                        <button id="btn-hud-klasmen" type="button" title="Klasmen" class="btn-roblox bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl text-[10px] sm:text-xs border border-amber-200">
+                            🏆 <span class="hidden sm:inline">Klasmen</span>
                         </button>
-                        <button id="btn-hud-mabar" title="Mabar 200 Murid" class="btn-roblox bg-purple-600 hover:bg-purple-500 text-white font-bold px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl text-[10px] sm:text-xs border border-purple-300">
+                        <button id="btn-hud-mabar" type="button" title="Mabar 200 Murid" class="btn-roblox bg-purple-600 hover:bg-purple-500 text-white font-bold px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl text-[10px] sm:text-xs border border-purple-300">
                             🔥 Mabar
                         </button>
                     </div>
@@ -158,14 +150,17 @@
                 </div>
             </div>
 
-            <!-- PANEL QUEST & LOKASI ZONA -->
+            <!-- PANEL QUEST, BIOMA & LOKASI ZONA -->
             <div class="glass-hud rounded-2xl p-2 sm:p-2.5 text-white text-[11px] sm:text-xs shadow-lg">
-                <div class="flex items-center justify-between gap-1 mb-0.5 sm:mb-1">
-                    <span id="hud-zone-label" class="font-bold text-cyan-300 truncate">🗺️ Alun-Alun Nusantara</span>
-                    <button id="btn-hud-pause" class="bg-white/15 hover:bg-white/25 px-2 py-0.5 rounded text-[10px] sm:text-[11px] font-bold shrink-0">⏸️ Menu</button>
+                <div class="flex items-center justify-between gap-1 mb-0.5">
+                    <span id="hud-zone-label" class="font-bold text-cyan-300 truncate">🏛️ Alun-Alun Kota Nusantara</span>
+                    <button id="btn-hud-pause" type="button" class="bg-white/15 hover:bg-white/25 px-2 py-0.5 rounded text-[10px] sm:text-[11px] font-bold shrink-0">⏸️ Menu</button>
+                </div>
+                <div id="hud-biome-sub" class="text-[10px] text-amber-200 font-semibold mb-0.5">
+                    Wilayah Pusat • 6 Zona Belajar & 6 Bioma Luas (600×600)
                 </div>
                 <p id="hud-quest-text" class="hidden sm:block text-slate-200 leading-snug">
-                    Jelajahi 6 Zona Belajar, kalahkan monster pengganggu, atau bicara dengan Guru untuk menjawab kuis!
+                    Jelajahi Kota, Hutan Rimba, Pegunungan Salju, Pantai & 6 Zona Belajar untuk melawan monster dan menjawab kuis!
                 </p>
             </div>
 
@@ -184,8 +179,11 @@
         <!-- KANAN ATAS: MINIMAP 2D REAL-TIME & TELEPORT ZONA -->
         <div class="fixed top-0 right-0 safe-top safe-right flex flex-col items-end gap-1.5 pointer-events-auto">
             <div class="glass-hud p-1.5 sm:p-2 rounded-2xl shadow-xl flex flex-col items-center">
-                <canvas id="minimap-canvas" width="140" height="140" class="w-24 h-24 sm:w-36 sm:h-36 rounded-xl border-2 border-white/40 bg-emerald-900"></canvas>
-                <span class="text-[9px] sm:text-[10px] text-white/90 font-bold mt-0.5 sm:mt-1">🧭 Peta Dunia</span>
+                <canvas id="minimap-canvas" width="160" height="160" class="w-28 h-28 sm:w-40 sm:h-40 rounded-xl border-2 border-white/40 bg-emerald-900"></canvas>
+                <div class="flex items-center justify-between w-full px-1 mt-0.5 sm:mt-1">
+                    <span class="text-[9px] sm:text-[10px] text-white/90 font-bold">🧭 Peta 600×600</span>
+                    <button id="btn-hud-fast-travel" type="button" class="text-[9px] sm:text-[10px] bg-sky-500 hover:bg-sky-400 text-white font-bold px-1.5 py-0.5 rounded">🚀 Teleport</button>
+                </div>
             </div>
 
             <!-- PANEL LIVE MABAR 200 MURID (MUNCUL SAAT MODE MABAR AKTIF) -->
@@ -209,7 +207,7 @@
 
         <!-- PROMPT INTERAKSI DI TENGAH BAWAH -->
         <div id="interaction-prompt" class="hidden fixed bottom-36 sm:bottom-24 left-1/2 -translate-x-1/2 pointer-events-auto z-30 w-max max-w-[90vw]">
-            <button id="btn-interact-action" class="btn-roblox animate-bounce bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold px-4 py-2.5 sm:px-5 rounded-2xl border-3 sm:border-4 border-white shadow-2xl text-xs sm:text-base">
+            <button id="btn-interact-action" type="button" class="btn-roblox animate-bounce bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold px-4 py-2.5 sm:px-5 rounded-2xl border-3 sm:border-4 border-white shadow-2xl text-xs sm:text-base">
                 💬 Ketuk untuk Bicara
             </button>
         </div>
@@ -232,10 +230,12 @@
                 <span>•</span>
                 <span><b>Klik Kiri / F</b> Serang</span>
                 <span>•</span>
+                <span><b>Q</b> Senjata</span>
+                <span>•</span>
                 <span><b>E</b> Bicara Guru</span>
             </div>
 
-            <!-- Tombol Lari, Serang & Lompat Sentuh (Ergonomis untuk Ibu Jari HP) -->
+            <!-- Tombol Lari, Serang & Lompat Sentuh -->
             <div class="flex items-end gap-2 sm:gap-2.5 pointer-events-auto">
                 <button id="btn-switch-weapon" type="button" title="Ganti Senjata [Q]" class="btn-roblox bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold w-14 h-14 sm:w-auto sm:h-auto sm:px-3.5 sm:py-2.5 rounded-2xl border-3 border-white shadow-xl flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 text-xs select-none">
                     <span id="hud-weapon-icon" class="text-lg sm:text-base">✏️</span>
@@ -245,7 +245,7 @@
                     <span>⚡</span>
                     <span class="text-[9px] mt-0.5">Lari</span>
                 </button>
-                <button id="btn-action-attack" type="button" class="btn-roblox bg-rose-500 hover:bg-rose-400 active:bg-rose-600 text-white font-bold w-16 h-16 sm:w-auto sm:h-auto sm:px-4 sm:py-2.5 rounded-2xl border-3 border-white shadow-xl flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 text-sm select-none">
+                <button id="btn-action-attack" type="button" class="btn-roblox bg-rose-500 hover:bg-rose-400 active:bg-rose-600 text-white font-bold w-16 h-16 sm:w-auto sm:h-auto sm:px-4 sm:py-2.5 rounded-2xl border-3 border-white shadow-xl flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 text-sm select-none cursor-pointer">
                     <span class="text-xl sm:text-base">⚔️</span>
                     <span id="hud-attack-label" class="text-[10px] sm:text-sm font-bold">Serang</span>
                 </button>
@@ -271,10 +271,10 @@
         <div class="glass-panel max-w-2xl w-full rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-amber-400 my-auto">
             <div class="text-center mb-5">
                 <div class="inline-block bg-amber-400 text-amber-950 font-bold text-xs px-3 py-1 rounded-full mb-2 border-2 border-amber-600">
-                    🧱 DUNIA BELAJAR 3D OPEN-WORLD SD
+                    🧱 DUNIA BELAJAR 3D OPEN-WORLD SD (PETA LUAS 600×600)
                 </div>
                 <h1 class="text-3xl md:text-4xl font-bold text-slate-800 tracking-tight">EduBlox Nusantara 3D</h1>
-                <p class="text-xs md:text-sm text-slate-600 mt-1">Jelajahi 6 Zona Belajar, Kalahkan Monster, Jawab Kuis & Mabar Online!</p>
+                <p class="text-xs md:text-sm text-slate-600 mt-1">Jelajahi Kota Nusantara, Hutan Rimba, Pegunungan Salju, Danau, Pantai & Gurun Candi!</p>
             </div>
 
             <!-- Input Nama Pemain -->
@@ -302,12 +302,12 @@
 
             <!-- Instruksi Cara Main -->
             <div class="bg-sky-50 border-2 border-sky-200 rounded-2xl p-3.5 mb-5 text-xs text-slate-700 space-y-1">
-                <div class="font-bold text-sky-900 text-sm mb-1">📖 Cara Bermain:</div>
-                <p>• <b>HP Android / iOS:</b> Gunakan <b>Joystick Kiri</b> untuk jalan, usap layar untuk putar kamera (cubit 2 jari untuk zoom), dan tekan tombol <b>Senjata / Serang / Lompat</b> di kanan.</p>
-                <p>• <b>Laptop / PC:</b> Gunakan <b>WASD / Panah</b> untuk jalan, <b>Shift</b> lari, <b>Spasi</b> lompat, <b>[Q]</b> ganti senjata (Pensil / Panah / Tembak), <b>[E]</b> bicara Guru, dan <b>Klik Kiri / [F]</b> menyerang.</p>
+                <div class="font-bold text-sky-900 text-sm mb-1">📖 Cara Bermain & Peta Luas:</div>
+                <p>• <b>Wilayah Dunia Luas:</b> Kota Nusantara (Pusat), Hutan Rimba Pinus, Pegunungan Tinggi Salju, Pantai & Dermaga Selatan, Danau Kristal Utara, serta Gurun Candi Kuno.</p>
+                <p>• <b>Kontrol:</b> Gunakan <b>WASD / Joystick</b> untuk jalan, <b>Spasi</b> lompat, <b>[Q]</b> ganti senjata, <b>[E]</b> bicara Guru, dan <b>Klik Kiri / [F] / Tombol Serang</b> untuk menyerang monster!</p>
             </div>
 
-            <button id="btn-start-play" disabled class="btn-roblox w-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-4 rounded-2xl border-4 border-emerald-700 text-lg md:text-xl">
+            <button id="btn-start-play" type="button" disabled class="btn-roblox w-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-4 rounded-2xl border-4 border-emerald-700 text-lg md:text-xl">
                 🚀 Mulai Bermain
             </button>
         </div>
@@ -331,10 +331,10 @@
                 </p>
             </div>
             <div class="grid grid-cols-2 gap-3">
-                <button id="btn-npc-close" class="btn-roblox bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 rounded-2xl border-3 border-slate-400 text-sm">
+                <button id="btn-npc-close" type="button" class="btn-roblox bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 rounded-2xl border-3 border-slate-400 text-sm">
                     Tutup
                 </button>
-                <button id="btn-npc-start-quiz" class="btn-roblox bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-2xl border-3 border-blue-800 text-sm">
+                <button id="btn-npc-start-quiz" type="button" class="btn-roblox bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-2xl border-3 border-blue-800 text-sm">
                     📝 Kerjakan Kuis!
                 </button>
             </div>
@@ -357,16 +357,32 @@
                 </p>
             </div>
 
-            <div id="quiz-options-list" class="space-y-2.5 mb-4">
-                <!-- Tombol pilihan A, B, C, D -->
-            </div>
+            <div id="quiz-options-list" class="space-y-2.5 mb-4"></div>
 
             <div id="quiz-result-box" class="hidden rounded-2xl p-3.5 mb-4 border-2">
                 <p id="quiz-result-title" class="font-bold text-base mb-1"></p>
                 <p id="quiz-result-exp" class="text-xs md:text-sm text-slate-700"></p>
-                <button id="btn-quiz-continue" class="btn-roblox mt-3 w-full bg-indigo-600 text-white font-bold py-2.5 rounded-xl border-2 border-indigo-800 text-sm">
+                <button id="btn-quiz-continue" type="button" class="btn-roblox mt-3 w-full bg-indigo-600 text-white font-bold py-2.5 rounded-xl border-2 border-indigo-800 text-sm">
                     Lanjutkan Petualangan ➔
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================================== -->
+    <!-- MODAL TELEPORT CEPAT KE WILAYAH & ZONA BELAJAR                           -->
+    <!-- ======================================================================== -->
+    <div id="teleport-modal" class="hidden fixed inset-0 bg-slate-900/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-panel max-w-lg w-full rounded-3xl p-6 shadow-2xl border-4 border-sky-400">
+            <div class="flex justify-between items-center border-b-2 border-slate-200 pb-3 mb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">🚀 Teleportasi Cepat Dunia</h2>
+                    <p class="text-xs text-slate-500">Pilih zona belajar atau wilayah alam untuk langsung berpindah</p>
+                </div>
+                <button id="btn-close-teleport" type="button" class="btn-roblox bg-rose-500 text-white font-bold px-3 py-1.5 rounded-xl text-xs">✖ Tutup</button>
+            </div>
+            <div id="teleport-list" class="grid grid-cols-2 gap-2.5 max-h-[60vh] overflow-y-auto">
+                <!-- Diisi dinamis -->
             </div>
         </div>
     </div>
@@ -381,7 +397,7 @@
                     <h2 class="text-2xl font-bold text-slate-800">📊 Rapor Belajar Siswa</h2>
                     <p id="rapor-student-info" class="text-xs md:text-sm font-bold text-emerald-700">Nama: Budi • Kelas 4</p>
                 </div>
-                <button id="btn-close-rapor" class="btn-roblox bg-rose-500 text-white font-bold px-3.5 py-1.5 rounded-xl text-sm">✖ Tutup</button>
+                <button id="btn-close-rapor" type="button" class="btn-roblox bg-rose-500 text-white font-bold px-3.5 py-1.5 rounded-xl text-sm">✖ Tutup</button>
             </div>
 
             <div class="grid grid-cols-3 gap-3 mb-4 text-center">
@@ -399,9 +415,7 @@
                 </div>
             </div>
 
-            <div id="rapor-subjects-list" class="space-y-2.5">
-                <!-- Daftar progress 6 mapel -->
-            </div>
+            <div id="rapor-subjects-list" class="space-y-2.5"></div>
         </div>
     </div>
 
@@ -415,18 +429,17 @@
                     <h2 class="text-2xl font-bold text-slate-800">🏆 Klasmen EduBlox Nusantara</h2>
                     <p class="text-xs text-slate-500">Diurutkan berdasarkan Total XP, Jawaban Benar, lalu Koin</p>
                 </div>
-                <button id="btn-close-klasmen" class="btn-roblox bg-rose-500 text-white font-bold px-3.5 py-1.5 rounded-xl text-sm">✖ Tutup</button>
+                <button id="btn-close-klasmen" type="button" class="btn-roblox bg-rose-500 text-white font-bold px-3.5 py-1.5 rounded-xl text-sm">✖ Tutup</button>
             </div>
 
-            <!-- Tab Filter Klasmen Umum vs Per Mapel -->
             <div class="flex flex-wrap gap-1.5 mb-3">
-                <button data-lb-filter="ALL" class="lb-filter-btn bg-amber-400 text-amber-950 font-bold px-3 py-1 rounded-xl text-xs border-2 border-amber-600">🌟 Semua Mapel</button>
-                <button data-lb-filter="Matematika" class="lb-filter-btn bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-xl text-xs border border-slate-300">🏫 Matematika</button>
-                <button data-lb-filter="IPAS" class="lb-filter-btn bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-xl text-xs border border-slate-300">🌿 IPAS</button>
-                <button data-lb-filter="Bahasa Indonesia" class="lb-filter-btn bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-xl text-xs border border-slate-300">📚 B. Indonesia</button>
-                <button data-lb-filter="PKN" class="lb-filter-btn bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-xl text-xs border border-slate-300">🏛️ PKN</button>
-                <button data-lb-filter="Koding" class="lb-filter-btn bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-xl text-xs border border-slate-300">💻 Koding</button>
-                <button data-lb-filter="AI" class="lb-filter-btn bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-xl text-xs border border-slate-300">🤖 AI</button>
+                <button type="button" data-lb-filter="ALL" class="lb-filter-btn bg-amber-400 text-amber-950 font-bold px-3 py-1 rounded-xl text-xs border-2 border-amber-600">🌟 Semua Mapel</button>
+                <button type="button" data-lb-filter="Matematika" class="lb-filter-btn bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-xl text-xs border border-slate-300">🏫 Matematika</button>
+                <button type="button" data-lb-filter="IPAS" class="lb-filter-btn bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-xl text-xs border border-slate-300">🌿 IPAS</button>
+                <button type="button" data-lb-filter="Bahasa Indonesia" class="lb-filter-btn bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-xl text-xs border border-slate-300">📚 B. Indonesia</button>
+                <button type="button" data-lb-filter="PKN" class="lb-filter-btn bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-xl text-xs border border-slate-300">🏛️ PKN</button>
+                <button type="button" data-lb-filter="Koding" class="lb-filter-btn bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-xl text-xs border border-slate-300">💻 Koding</button>
+                <button type="button" data-lb-filter="AI" class="lb-filter-btn bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-xl text-xs border border-slate-300">🤖 AI</button>
             </div>
 
             <div class="overflow-y-auto rounded-2xl border-2 border-slate-200 flex-1">
@@ -441,9 +454,7 @@
                             <th class="py-2.5 px-3 text-right">Total XP</th>
                         </tr>
                     </thead>
-                    <tbody id="klasmen-tbody" class="divide-y divide-slate-200 bg-white">
-                        <!-- Diisi dinamis -->
-                    </tbody>
+                    <tbody id="klasmen-tbody" class="divide-y divide-slate-200 bg-white"></tbody>
                 </table>
             </div>
         </div>
@@ -456,14 +467,13 @@
         <div class="glass-panel max-w-lg w-full rounded-3xl p-6 shadow-2xl border-4 border-purple-500 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-3">
                 <h2 class="text-xl md:text-2xl font-bold text-slate-800">🔥 Mode Mabar Online Real-Time</h2>
-                <button id="btn-close-mabar-setup" class="text-slate-500 hover:text-slate-800 font-bold text-lg">✖</button>
+                <button id="btn-close-mabar-setup" type="button" class="text-slate-500 hover:text-slate-800 font-bold text-lg">✖</button>
             </div>
             <p class="text-xs md:text-sm text-slate-600 mb-3">
-                Main bareng teman sekelas dari <b>HP atau Laptop berbeda secara real-time</b> (termasuk saat di-publish di GitHub Pages)!
+                Main bareng teman sekelas dari <b>HP atau Laptop berbeda secara real-time</b>!
             </p>
 
             <div class="space-y-3 mb-4">
-                <!-- Pilih Mode Mabar -->
                 <div class="grid grid-cols-2 gap-2">
                     <button type="button" id="btn-mode-online-real" class="btn-roblox bg-emerald-500 text-white font-bold p-3 rounded-2xl border-3 border-emerald-700 text-left text-xs">
                         <div class="text-base mb-0.5">🌐 Online Antar HP/PC</div>
@@ -475,7 +485,6 @@
                     </button>
                 </div>
 
-                <!-- Pengaturan Room Online -->
                 <div id="mabar-online-config-box" class="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-3.5 space-y-2.5">
                     <div>
                         <label class="block font-bold text-emerald-950 text-xs mb-1">1. Ketik Kode Room Kelas (Harus Sama Antar Teman):</label>
@@ -504,7 +513,7 @@
                 </div>
             </div>
 
-            <button id="btn-start-mabar" class="btn-roblox w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-2xl border-4 border-purple-800 text-base">
+            <button id="btn-start-mabar" type="button" class="btn-roblox w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-2xl border-4 border-purple-800 text-base">
                 ⚡ Mulai Simulasi Offline 200 Murid
             </button>
         </div>
@@ -521,7 +530,6 @@
                 Kamu meraih Peringkat #1 dari 200 Peserta!
             </p>
 
-            <!-- Podium Juara 1 - 3 -->
             <div class="grid grid-cols-3 gap-2 items-end bg-amber-50 border-2 border-amber-300 rounded-2xl p-3 mb-5">
                 <div class="bg-slate-200 rounded-xl p-2 border border-slate-400">
                     <div class="text-xl">🥈</div>
@@ -541,10 +549,10 @@
             </div>
 
             <div class="grid grid-cols-2 gap-2.5">
-                <button id="btn-mabar-play-again" class="btn-roblox bg-emerald-500 text-white font-bold py-3 rounded-2xl border-3 border-emerald-700 text-sm md:text-base">
+                <button id="btn-mabar-play-again" type="button" class="btn-roblox bg-emerald-500 text-white font-bold py-3 rounded-2xl border-3 border-emerald-700 text-sm md:text-base">
                     🔄 Main Lagi
                 </button>
-                <button id="btn-mabar-exit" class="btn-roblox bg-slate-200 text-slate-800 font-bold py-3 rounded-2xl border-3 border-slate-400 text-sm md:text-base">
+                <button id="btn-mabar-exit" type="button" class="btn-roblox bg-slate-200 text-slate-800 font-bold py-3 rounded-2xl border-3 border-slate-400 text-sm md:text-base">
                     Kembali Eksplorasi
                 </button>
             </div>
@@ -558,13 +566,13 @@
         <div class="glass-panel max-w-sm w-full rounded-3xl p-6 text-center shadow-2xl">
             <h2 class="text-2xl font-bold text-slate-800 mb-4">⏸️ Permainan Dijeda</h2>
             <div class="space-y-2.5">
-                <button id="btn-resume-game" class="btn-roblox w-full bg-emerald-500 text-white font-bold py-3 rounded-2xl border-3 border-emerald-700">
+                <button id="btn-resume-game" type="button" class="btn-roblox w-full bg-emerald-500 text-white font-bold py-3 rounded-2xl border-3 border-emerald-700">
                     ▶ Lanjutkan Bermain
                 </button>
-                <button id="btn-tp-spawn" class="btn-roblox w-full bg-sky-500 text-white font-bold py-3 rounded-2xl border-3 border-sky-700">
-                    🏠 Kembali ke Titik Awal
+                <button id="btn-tp-spawn" type="button" class="btn-roblox w-full bg-sky-500 text-white font-bold py-3 rounded-2xl border-3 border-sky-700">
+                    🏠 Kembali ke Kota Pusat
                 </button>
-                <button id="btn-change-grade-menu" class="btn-roblox w-full bg-amber-400 text-amber-950 font-bold py-3 rounded-2xl border-3 border-amber-600">
+                <button id="btn-change-grade-menu" type="button" class="btn-roblox w-full bg-amber-400 text-amber-950 font-bold py-3 rounded-2xl border-3 border-amber-600">
                     🎓 Ganti Nama / Kelas
                 </button>
             </div>
@@ -574,9 +582,9 @@
     <div id="gameover-modal" class="hidden fixed inset-0 bg-rose-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="glass-panel max-w-sm w-full rounded-3xl p-6 text-center shadow-2xl border-4 border-rose-500">
             <div class="text-5xl mb-2">💫</div>
-            <h2 class="text-2xl font-bold text-rose-600 mb-1">HP Habis!</h2>
-            <p class="text-xs md:text-sm text-slate-600 mb-4">Jangan menyerah! Karaktermu akan bangkit kembali di titik awal dengan HP penuh.</p>
-            <button id="btn-respawn-now" class="btn-roblox w-full bg-emerald-500 text-white font-bold py-3 rounded-2xl border-4 border-emerald-700 text-base">
+            <h2 id="gameover-title" class="text-2xl font-bold text-rose-600 mb-1">HP Habis!</h2>
+            <p class="text-xs md:text-sm text-slate-600 mb-4">Jangan menyerah! Karaktermu akan bangkit kembali di Kota Pusat dengan HP penuh.</p>
+            <button id="btn-respawn-now" type="button" class="btn-roblox w-full bg-emerald-500 text-white font-bold py-3 rounded-2xl border-4 border-emerald-700 text-base">
                 ❤️ Bangkit & Lanjutkan!
             </button>
         </div>
@@ -585,21 +593,22 @@
     <script>
         /**
          * ============================================================================
-         * 1. START_KELAS: KONFIGURASI ZONA, STATE PEMAIN & PERSISTENSI LOCALSTORAGE
+         * 1. KONFIGURASI ZONA BELAJAR, WILAYAH BIOMA & STATE PEMAIN
          * ============================================================================
          */
-        const STORAGE_KEY = 'edublox_nusantara_save_v1';
-        const LEADERBOARD_KEY = 'edublox_nusantara_leaderboard_v1';
+        const STORAGE_KEY = 'edublox_nusantara_save_v2';
+        const LEADERBOARD_KEY = 'edublox_nusantara_leaderboard_v2';
+        const WORLD_HALF_SIZE = 290; // Dunia luas 600 x 600 unit (-290 .. +290)
 
         const ZONES_CONFIG = [
             {
                 id: 'Matematika',
-                title: 'Gedung Matematika',
+                title: 'Gedung Matematika (Kota)',
                 icon: '🏫',
                 color: 0x2563eb,
                 hex: '#2563eb',
-                x: -65,
-                z: -60,
+                x: -75,
+                z: -70,
                 npcName: 'Pak Budi (Guru Matematika)',
                 enemyName: 'Slime Angka',
                 enemyColor: 0x3b82f6,
@@ -614,21 +623,21 @@
             },
             {
                 id: 'IPAS',
-                title: 'Area IPAS',
+                title: 'Pos IPAS (Hutan Rimba)',
                 icon: '🌿',
                 color: 0x16a34a,
                 hex: '#16a34a',
-                x: 65,
-                z: -60,
+                x: 145,
+                z: -85,
                 npcName: 'Bu Sari (Guru IPAS)',
-                enemyName: 'Monster Polusi',
+                enemyName: 'Monster Polusi Hutan',
                 enemyColor: 0x15803d,
                 materials: {
-                    1: 'Selamat datang di Area IPAS Kelas 1! Kita mengenal bagian tubuh manusia, panca indra, serta bagian tumbuhan seperti akar, batang, dan daun.',
-                    2: 'Halo Kelas 2! Kita belajar wujud benda (padat, cair, gas), tempat hidup hewan, dan cara menjaga kebersihan lingkungan sekitar.',
+                    1: 'Selamat datang di Hutan IPAS Kelas 1! Kita mengenal bagian tubuh manusia, panca indra, serta bagian tumbuhan seperti akar, batang, dan daun.',
+                    2: 'Halo Kelas 2! Kita belajar wujud benda (padat, cair, gas), tempat hidup hewan hutan, dan cara menjaga kebersihan lingkungan sekitar.',
                     3: 'Halo Kelas 3! Mari pelajari daur hidup/metamorfosis hewan (kupu-kupu dan katak), sumber energi, serta perubahan cuaca.',
                     4: 'Halo Kelas 4! Kita mendalami bagian bunga dan penyerbukan, macam-macam gaya (gravitasi, magnet, gesek), serta perubahan wujud benda.',
-                    5: 'Halo Kelas 5! Fokus kita adalah rantai makanan di ekosistem, sistem pernapasan dan pencernaan manusia, serta sifat-sifat cahaya.',
+                    5: 'Halo Kelas 5! Fokus kita adalah rantai makanan di ekosistem hutan, sistem pernapasan dan pencernaan manusia, serta sifat-sifat cahaya.',
                     6: 'Halo Kelas 6! Kita mempelajari fotosintesis tumbuhan, tata surya dan revolusi bumi, rangkaian listrik seri/paralel, serta perkembangbiakan makhluk hidup.'
                 }
             },
@@ -638,8 +647,8 @@
                 icon: '📚',
                 color: 0xea580c,
                 hex: '#ea580c',
-                x: -85,
-                z: 20,
+                x: -145,
+                z: 45,
                 npcName: 'Bu Ratna (Pustakawan)',
                 enemyName: 'Kutu Salah Eja',
                 enemyColor: 0xf97316,
@@ -654,12 +663,12 @@
             },
             {
                 id: 'PKN',
-                title: 'Balai PKN',
+                title: 'Balai PKN (Gurun Candi)',
                 icon: '🏛️',
                 color: 0xdc2626,
                 hex: '#dc2626',
-                x: 85,
-                z: 20,
+                x: 150,
+                z: 115,
                 npcName: 'Pak Garuda (Guru PKN)',
                 enemyName: 'Golem Egois',
                 enemyColor: 0xef4444,
@@ -674,37 +683,37 @@
             },
             {
                 id: 'Koding',
-                title: 'Lab Koding',
+                title: 'Lab Koding (Pegunungan)',
                 icon: '💻',
                 color: 0x7c3aed,
                 hex: '#7c3aed',
-                x: -60,
-                z: 85,
+                x: -140,
+                z: -165,
                 npcName: 'Kak Raka (Mentor Koding)',
-                enemyName: 'Robot Bug',
+                enemyName: 'Robot Bug Gunung',
                 enemyColor: 0x8b5cf6,
                 materials: {
-                    1: 'Halo Kelas 1! Koding dimulai dari berpikir urut (algoritma), seperti urutan langkah menyikat gigi atau memakai sepatu yang benar!',
-                    2: 'Halo Kelas 2! Kita belajar memberi perintah arah (maju, belok kiri, belok kanan) untuk memandu robot sampai ke tujuan.',
+                    1: 'Halo Kelas 1 di Lab Pegunungan! Koding dimulai dari berpikir urut (algoritma), seperti urutan langkah menyikat gigi atau memakai sepatu yang benar!',
+                    2: 'Halo Kelas 2! Kita belajar memberi perintah arah (maju, belok kiri, belok kanan) untuk memandu robot sampai ke puncak gunung.',
                     3: 'Halo Kelas 3! Mari mengenal pola berulang dan cara menemukan kesalahan (debugging) pada urutan perintah sederhana.',
-                    4: 'Halo Kelas 4! Kita belajar blok logika percabangan "JIKA - MAKA" (If-Else), misalnya: Jika hujan turun, maka buka payung.',
+                    4: 'Halo Kelas 4! Kita belajar blok logika percabangan "JIKA - MAKA" (If-Else), misalnya: Jika salju turun, maka pakai jaket.',
                     5: 'Halo Kelas 5! Fokus kita adalah perulangan (Looping) agar kode lebih ringkas, serta variabel untuk menyimpan skor game.',
                     6: 'Halo Kelas 6! Kita merancang algoritma efisien dengan kombinasi Loop, Kondisi Logika (AND/OR), Variabel, dan Fungsi!'
                 }
             },
             {
                 id: 'AI',
-                title: 'Pusat AI',
+                title: 'Pusat AI (Pantai Selatan)',
                 icon: '🤖',
                 color: 0x0891b2,
                 hex: '#0891b2',
-                x: 60,
-                z: 85,
+                x: 45,
+                z: 165,
                 npcName: 'Dr. Aura (Mentor AI)',
-                enemyName: 'Virus Data',
+                enemyName: 'Virus Data Pantai',
                 enemyColor: 0x06b6d4,
                 materials: {
-                    1: 'Halo Kelas 1! Kecerdasan Artifisial (AI) membuat mesin bisa membantu manusia, seperti asisten suara pintar dan robot penyapu lantai.',
+                    1: 'Halo Kelas 1 di Pusat AI Pantai! Kecerdasan Artifisial (AI) membuat mesin bisa membantu manusia, seperti asisten suara pintar dan robot penyapu lantai.',
                     2: 'Halo Kelas 2! AI belajar mengenali gambar dan suara manusia melalui sensor kamera dan mikrofon pada perangkat pintar.',
                     3: 'Halo Kelas 3! Kita mengenal bagaimana AI memberi rekomendasi video belajar atau lagu yang sesuai dengan minat kita.',
                     4: 'Halo Kelas 4! AI membutuhkan data latih (training data) yang banyak dan bersih agar tidak salah mengenali objek.',
@@ -712,6 +721,16 @@
                     6: 'Halo Kelas 6! Kita mempelajari konsep Machine Learning (pembelajaran mesin dari pola data), pengenalan wajah, dan pemrosesan bahasa alami.'
                 }
             }
+        ];
+
+        const WORLD_REGIONS = [
+            { id: 'kota', name: '🏙️ Kota Nusantara & Alun-Alun', x: 0, z: 0, radius: 105, hex: '#fbbf24' },
+            { id: 'gunung', name: '🏔️ Pegunungan Tinggi & Puncak Salju', x: -165, z: -175, radius: 115, hex: '#94a3b8' },
+            { id: 'hutan', name: '🌲 Hutan Rimba Pinus & Lembah Hijau', x: 165, z: -120, radius: 120, hex: '#15803d' },
+            { id: 'danau', name: '🏞️ Danau Kristal & Air Terjun Utara', x: 10, z: -185, radius: 85, hex: '#38bdf8' },
+            { id: 'gurun', name: '🏜️ Gurun Candi & Bukit Pasir Timur', x: 175, z: 135, radius: 115, hex: '#f59e0b' },
+            { id: 'pantai', name: '🏖️ Pantai Tropis & Dermaga Selatan', x: 0, z: 210, radius: 120, hex: '#06b6d4' },
+            { id: 'kebun', name: '🌻 Perkampungan & Kebun Barat', x: -180, z: 95, radius: 105, hex: '#84cc16' }
         ];
 
         const playerData = {
@@ -723,7 +742,7 @@
             hp: 100,
             maxHp: 100,
             stamina: 100,
-            damage: 25,
+            damage: 30,
             unlockedWeapons: ['pencil'],
             equippedWeapon: 'pencil',
             totalAnswered: 0,
@@ -746,7 +765,7 @@
             activeQuiz: null,
             usedQuestions: new Set(),
             mabarActive: false,
-            mabarMode: 'offline', // 'offline' | 'online_host' | 'online_client'
+            mabarMode: 'offline',
             mabarRoomCode: 'KELAS4A',
             mabarWithBots: true,
             mabarTimeLeft: 300,
@@ -792,11 +811,10 @@
 
         /**
          * ============================================================================
-         * 6. BANK_SOAL_PER_KELAS: 180 SOAL (5 SOAL × 6 MAPEL × 6 KELAS)
+         * 2. BANK SOAL PER KELAS (180 SOAL: 5 SOAL × 6 MAPEL × 6 KELAS)
          * ============================================================================
          */
         const QUESTION_BANK = {
-            // ======================== KELAS 1 (30 SOAL) ========================
             1: {
                 'Matematika': [
                     { q: '2 + 3 = ...', opts: ['4', '5', '6', '7'], ans: 1, exp: '2 ditambah 3 sama dengan 5.' },
@@ -841,8 +859,6 @@
                     { q: 'Siapa yang menciptakan dan memprogram AI?', opts: ['Manusia', 'Batu', 'Pohon', 'Awan'], ans: 0, exp: 'AI dibuat oleh manusia untuk membantu pekerjaan.' }
                 ]
             },
-
-            // ======================== KELAS 2 (30 SOAL) ========================
             2: {
                 'Matematika': [
                     { q: '3 × 4 = ...', opts: ['7', '10', '12', '15'], ans: 2, exp: '3 × 4 artinya 4 + 4 + 4 = 12.' },
@@ -887,8 +903,6 @@
                     { q: 'Apakah AI punya perasaan sedih dan gembira seperti manusia?', opts: ['Ya, sama persis', 'Tidak, AI hanya program komputer', 'Kadang menangis', 'Punya hati'], ans: 1, exp: 'AI adalah sistem komputer cerdas, tidak memiliki perasaan alami.' }
                 ]
             },
-
-            // ======================== KELAS 3 (30 SOAL) ========================
             3: {
                 'Matematika': [
                     { q: '36 ÷ 4 = ...', opts: ['7', '8', '9', '10'], ans: 2, exp: '4 × 9 = 36, jadi 36 ÷ 4 = 9.' },
@@ -933,8 +947,6 @@
                     { q: 'Data dalam AI bisa berupa...', opts: ['Teks, gambar, suara, dan angka', 'Hanya batu', 'Hanya air', 'Hanya udara'], ans: 0, exp: 'AI dapat memproses berbagai jenis data digital.' }
                 ]
             },
-
-            // ======================== KELAS 4 (30 SOAL) ========================
             4: {
                 'Matematika': [
                     { q: 'FPB (Faktor Persekutuan Terbesar) dari 12 dan 18 adalah...', opts: ['3', '6', '9', '36'], ans: 1, exp: 'Faktor 12: 1,2,3,4,6,12. Faktor 18: 1,2,3,6,9,18. FPB = 6.' },
@@ -979,8 +991,6 @@
                     { q: 'Sensor kamera pada robot pengantar barang berfungsi sebagai...', opts: ['Computer Vision (Penglihatan Komputer)', 'Pengeras suara', 'Baterai cadangan', 'Roda penggerak'], ans: 0, exp: 'Computer Vision membuat komputer mampu memahami gambar/video.' }
                 ]
             },
-
-            // ======================== KELAS 5 (30 SOAL) ========================
             5: {
                 'Matematika': [
                     { q: 'Hasil dari 1/2 + 1/4 adalah...', opts: ['2/6', '3/4', '2/4', '1/6'], ans: 1, exp: '1/2 = 2/4, maka 2/4 + 1/4 = 3/4.' },
@@ -1025,8 +1035,6 @@
                     { q: 'Kecerdasan AI yang mampu membuat gambar baru dari deskripsi teks disebut...', opts: ['Generative AI (AI Generatif)', 'Kalkulator saku', 'Jam digital', 'Termometer'], ans: 0, exp: 'Generative AI menghasilkan teks, gambar, atau audio baru.' }
                 ]
             },
-
-            // ======================== KELAS 6 (30 SOAL) ========================
             6: {
                 'Matematika': [
                     { q: 'Volume kubus dengan panjang rusuk 5 cm adalah...', opts: ['25 cm³', '75 cm³', '125 cm³', '150 cm³'], ans: 2, exp: 'Volume kubus = s³ = 5 × 5 × 5 = 125 cm³.' },
@@ -1075,7 +1083,7 @@
 
         /**
          * ============================================================================
-         * 2. DUNIA & PEMAIN: SETUP THREE.JS, PETA 300x300, 6 ZONA, KARAKTER ROBLOX
+         * 3. DUNIA 3D LUAS (600x600): KOTA, HUTAN, GUNUNG, DANAU, GURUN & PANTAI
          * ============================================================================
          */
         let scene, camera, renderer;
@@ -1084,11 +1092,11 @@
         let zoneMarkers = [];
         let friendlyNPCs = [];
         let enemies = [];
-        let floatingEffects = [];
         let weaponPickups = [];
         let activeProjectiles = [];
         let weaponVisuals = {};
         let bombTraps = [];
+        let terrainPatches = [];
 
         const WEAPONS_CONFIG = {
             pencil: {
@@ -1097,7 +1105,7 @@
                 fullName: 'Tongkat Pensil Ilmu',
                 icon: '✏️',
                 actionLabel: 'Serang',
-                cooldown: 0.35,
+                cooldown: 0.32,
                 damageMult: 1.0,
                 color: 0xfacc15
             },
@@ -1107,9 +1115,9 @@
                 fullName: 'Busur Panah Pengetahuan',
                 icon: '🏹',
                 actionLabel: 'Panah',
-                cooldown: 0.45,
-                damageMult: 1.15,
-                projSpeed: 42,
+                cooldown: 0.42,
+                damageMult: 1.2,
+                projSpeed: 46,
                 color: 0x22c55e
             },
             blaster: {
@@ -1118,9 +1126,9 @@
                 fullName: 'Blaster Gelembung Ilmu',
                 icon: '🔫',
                 actionLabel: 'Tembak',
-                cooldown: 0.26,
-                damageMult: 0.95,
-                projSpeed: 54,
+                cooldown: 0.24,
+                damageMult: 1.0,
+                projSpeed: 58,
                 color: 0x38bdf8
             }
         };
@@ -1137,9 +1145,9 @@
             const canvas = document.getElementById('game-canvas');
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x7dd3fc);
-            scene.fog = new THREE.Fog(0xbae6fd, 95, 290);
+            scene.fog = new THREE.Fog(0xbae6fd, 135, 430);
 
-            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 360);
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 520);
 
             renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
@@ -1147,23 +1155,22 @@
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-            // Pencahayaan Ambient + Directional
-            const ambient = new THREE.AmbientLight(0xffffff, 0.65);
+            const ambient = new THREE.AmbientLight(0xffffff, 0.72);
             scene.add(ambient);
 
             const dirLight = new THREE.DirectionalLight(0xfffbeb, 0.95);
-            dirLight.position.set(80, 130, 60);
+            dirLight.position.set(130, 210, 110);
             dirLight.castShadow = true;
-            dirLight.shadow.mapSize.width = 1024;
-            dirLight.shadow.mapSize.height = 1024;
-            const shadowBound = 140;
+            dirLight.shadow.mapSize.width = 2048;
+            dirLight.shadow.mapSize.height = 2048;
+            const shadowBound = 240;
             dirLight.shadow.camera.left = -shadowBound;
             dirLight.shadow.camera.right = shadowBound;
             dirLight.shadow.camera.top = shadowBound;
             dirLight.shadow.camera.bottom = -shadowBound;
             scene.add(dirLight);
 
-            buildEnvironmentMap();
+            buildExpandedEnvironmentMap();
             buildSixLearningZones();
             buildPlayerRobloxCharacter();
             spawnWeaponPickups();
@@ -1191,7 +1198,7 @@
             ctx.strokeStyle = '#ffffff';
             ctx.stroke();
 
-            ctx.font = 'bold 40px Fredoka, sans-serif';
+            ctx.font = 'bold 38px Fredoka, sans-serif';
             ctx.fillStyle = textHex;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
@@ -1220,130 +1227,333 @@
             return mesh;
         }
 
-        function buildEnvironmentMap() {
-            // Padang rumput luas 300 x 300 unit
+        // Menghitung elevasi dataran sehingga karakter dapat mendaki bukit & pegunungan dengan mulus
+        function getGroundHeightAt(x, z) {
+            let maxH = 0;
+            for (const p of terrainPatches) {
+                if (Math.abs(x - p.x) <= p.w / 2 && Math.abs(z - p.z) <= p.d / 2) {
+                    if (p.topY > maxH) maxH = p.topY;
+                }
+            }
+            return maxH;
+        }
+
+        function addTerrainStep(x, z, w, d, topY, color) {
+            const mesh = new THREE.Mesh(
+                new THREE.BoxGeometry(w, topY, d),
+                new THREE.MeshLambertMaterial({ color })
+            );
+            mesh.position.set(x, topY / 2, z);
+            mesh.receiveShadow = true;
+            mesh.castShadow = true;
+            scene.add(mesh);
+            terrainPatches.push({ x, z, w, d, topY });
+            return mesh;
+        }
+
+        function buildExpandedEnvironmentMap() {
+            // 1. Daratan Dasar Luas 620 x 620
             const ground = new THREE.Mesh(
-                new THREE.PlaneGeometry(320, 320),
+                new THREE.PlaneGeometry(620, 620),
                 new THREE.MeshLambertMaterial({ color: 0x4ade80 })
             );
             ground.rotation.x = -Math.PI / 2;
             ground.receiveShadow = true;
             scene.add(ground);
 
-            // Alun-alun kota kecil di pusat (0,0)
+            // =========================================================================
+            // WILAYAH 1: KOTA NUSANTARA & ALUN-ALUN PUSAT (Radius 0 - 105)
+            // =========================================================================
+            const cityConcrete = new THREE.Mesh(
+                new THREE.CylinderGeometry(82, 82, 0.14, 32),
+                new THREE.MeshLambertMaterial({ color: 0x94a3b8 })
+            );
+            cityConcrete.position.set(0, 0.07, 0);
+            cityConcrete.receiveShadow = true;
+            scene.add(cityConcrete);
+
             const plaza = new THREE.Mesh(
-                new THREE.CylinderGeometry(24, 24, 0.15, 24),
+                new THREE.CylinderGeometry(28, 28, 0.2, 28),
                 new THREE.MeshLambertMaterial({ color: 0xfef08a })
             );
-            plaza.position.set(0, 0.08, 0);
+            plaza.position.set(0, 0.1, 0);
             plaza.receiveShadow = true;
             scene.add(plaza);
 
-            // Tugu Monumen EduBlox di tengah Alun-Alun
-            addStaticBox(0, 2, 0, 3, 4, 3, 0x3b82f6, true);
+            // Monumen Tugu EduBlox di Pusat Kota
+            addStaticBox(0, 2.5, 0, 3.6, 5, 3.6, 0x2563eb, true);
             const globe = new THREE.Mesh(
-                new THREE.SphereGeometry(1.6, 12, 12),
+                new THREE.SphereGeometry(1.9, 14, 14),
                 new THREE.MeshLambertMaterial({ color: 0xfacc15 })
             );
-            globe.position.set(0, 5.2, 0);
+            globe.position.set(0, 6.2, 0);
             scene.add(globe);
-            const welcomeSign = createCanvasLabel('🏫 ALUN-ALUN EDUBLOX', '#1e3a8a', '#facc15', 9, 2.1);
-            welcomeSign.position.set(0, 7.8, 0);
+            const welcomeSign = createCanvasLabel('🏙️ KOTA NUSANTARA', '#1e3a8a', '#facc15', 10, 2.2);
+            welcomeSign.position.set(0, 9.0, 0);
             scene.add(welcomeSign);
 
-            // Jalan setapak penghubung dari pusat ke 6 zona
-            const roadMat = new THREE.MeshLambertMaterial({ color: 0xe2e8f0 });
+            // Gedung-gedung pencakar langit & toko warna-warni di Kota Nusantara
+            const cityBuildings = [
+                [-36, -34, 12, 22, 12, 0x3b82f6],
+                [38, -32, 14, 28, 12, 0x0284c7],
+                [-42, 36, 13, 18, 13, 0xf59e0b],
+                [42, 34, 12, 24, 12, 0xec4899],
+                [-68, -12, 11, 20, 11, 0x6366f1],
+                [68, -10, 12, 26, 12, 0x14b8a6],
+                [-24, -68, 12, 16, 10, 0x8b5cf6],
+                [28, 66, 13, 19, 11, 0xf97316]
+            ];
+            cityBuildings.forEach(([bx, bz, bw, bh, bd, col]) => {
+                addStaticBox(bx, bh / 2, bz, bw, bh, bd, col, true);
+                // Atap & jendela dekoratif
+                const roof = new THREE.Mesh(
+                    new THREE.BoxGeometry(bw + 0.6, 0.8, bd + 0.6),
+                    new THREE.MeshLambertMaterial({ color: 0xf8fafc })
+                );
+                roof.position.set(bx, bh + 0.4, bz);
+                scene.add(roof);
+            });
+
+            // Jalan raya utama menyilang Utara-Selatan & Barat-Timur + jalur ke semua zona
+            const roadMat = new THREE.MeshLambertMaterial({ color: 0x334155 });
+            const mainRoadNS = new THREE.Mesh(new THREE.BoxGeometry(9, 0.16, 420), roadMat);
+            mainRoadNS.position.set(0, 0.08, 0);
+            mainRoadNS.receiveShadow = true;
+            scene.add(mainRoadNS);
+
+            const mainRoadEW = new THREE.Mesh(new THREE.BoxGeometry(420, 0.16, 9), roadMat);
+            mainRoadEW.position.set(0, 0.08, 0);
+            mainRoadEW.receiveShadow = true;
+            scene.add(mainRoadEW);
+
+            // Jalan penghubung ke 6 zona belajar
+            const pathMat = new THREE.MeshLambertMaterial({ color: 0xe2e8f0 });
             ZONES_CONFIG.forEach(zCfg => {
                 const dist = Math.hypot(zCfg.x, zCfg.z);
                 const angle = Math.atan2(zCfg.x, zCfg.z);
-                const road = new THREE.Mesh(new THREE.BoxGeometry(5, 0.1, dist), roadMat);
-                road.position.set(zCfg.x / 2, 0.05, zCfg.z / 2);
+                const road = new THREE.Mesh(new THREE.BoxGeometry(5.5, 0.12, dist), pathMat);
+                road.position.set(zCfg.x / 2, 0.06, zCfg.z / 2);
                 road.rotation.y = angle;
                 road.receiveShadow = true;
                 scene.add(road);
             });
 
-            // Danau biru di sisi utara (0, -110)
-            const lake = new THREE.Mesh(
-                new THREE.CylinderGeometry(22, 22, 0.18, 24),
-                new THREE.MeshLambertMaterial({ color: 0x38bdf8 })
+            // =========================================================================
+            // WILAYAH 2: PEGUNUNGAN TINGGI & PUNCAK SALJU (Barat Laut: -175, -185)
+            // =========================================================================
+            // Undakan lereng gunung yang bisa didaki pemain!
+            addTerrainStep(-175, -185, 130, 130, 2.5, 0x64748b);
+            addTerrainStep(-175, -185, 96, 96, 5.5, 0x475569);
+            addTerrainStep(-175, -185, 62, 62, 9.0, 0x94a3b8);
+            addTerrainStep(-175, -185, 32, 32, 13.0, 0xf8fafc); // Puncak Bersalju
+
+            // Puncak-puncak kerucut gunung tinggi di latar belakang
+            const peaks = [
+                [-225, -225, 36, 48, 0x475569],
+                [-140, -240, 30, 40, 0x64748b],
+                [-240, -145, 28, 36, 0x475569]
+            ];
+            peaks.forEach(([px, pz, rad, h, col]) => {
+                const body = new THREE.Mesh(new THREE.ConeGeometry(rad, h, 8), new THREE.MeshLambertMaterial({ color: col }));
+                body.position.set(px, h / 2, pz);
+                const snowCap = new THREE.Mesh(new THREE.ConeGeometry(rad * 0.42, h * 0.42, 8), new THREE.MeshLambertMaterial({ color: 0xffffff }));
+                snowCap.position.set(px, h * 0.79, pz);
+                scene.add(body, snowCap);
+            });
+            const mtnSign = createCanvasLabel('🏔️ PEGUNUNGAN SALJU', '#1e293b', '#38bdf8', 11, 2.3);
+            mtnSign.position.set(-175, 17.5, -185);
+            scene.add(mtnSign);
+
+            // =========================================================================
+            // WILAYAH 3: HUTAN RIMBA PINUS & LEMBAH HIJAU (Timur Laut: +165, -125)
+            // =========================================================================
+            const forestFloor = new THREE.Mesh(
+                new THREE.CircleGeometry(118, 28),
+                new THREE.MeshLambertMaterial({ color: 0x15803d })
             );
-            lake.position.set(0, 0.09, -112);
+            forestFloor.rotation.x = -Math.PI / 2;
+            forestFloor.position.set(165, 0.06, -125);
+            scene.add(forestFloor);
+
+            const forestSign = createCanvasLabel('🌲 HUTAN RIMBA NUSANTARA', '#064e3b', '#a7f3d0', 11.5, 2.3);
+            forestSign.position.set(165, 11, -125);
+            scene.add(forestSign);
+
+            // =========================================================================
+            // WILAYAH 4: DANAU KRISTAL & AIR TERJUN UTARA (Utara: 10, -195)
+            // =========================================================================
+            const lake = new THREE.Mesh(
+                new THREE.CylinderGeometry(42, 42, 0.22, 32),
+                new THREE.MeshLambertMaterial({ color: 0x0ea5e9 })
+            );
+            lake.position.set(10, 0.11, -195);
             scene.add(lake);
 
-            // Bukit-bukit rendah di tepi peta
-            const hillPositions = [
-                [-125, -120, 26, 10], [125, -120, 28, 12],
-                [-128, 118, 24, 9], [128, 118, 26, 11],
-                [0, 130, 30, 8]
-            ];
-            hillPositions.forEach(([hx, hz, rad, hh]) => {
-                const hill = new THREE.Mesh(
-                    new THREE.CylinderGeometry(rad * 0.55, rad, hh, 12),
-                    new THREE.MeshLambertMaterial({ color: 0x22c55e })
-                );
-                hill.position.set(hx, hh / 2, hz);
-                scene.add(hill);
-            });
+            // Tebing Air Terjun di ujung utara danau
+            addStaticBox(10, 12, -242, 38, 24, 14, 0x475569, true);
+            const waterfall = new THREE.Mesh(
+                new THREE.BoxGeometry(12, 23, 1.5),
+                new THREE.MeshBasicMaterial({ color: 0x7dd3fc })
+            );
+            waterfall.position.set(10, 11.5, -234.5);
+            scene.add(waterfall);
 
-            // Hutan pohon blocky tersebar di berbagai area
-            const trunkMat = new THREE.MeshLambertMaterial({ color: 0x92400e });
-            const leafMat = new THREE.MeshLambertMaterial({ color: 0x15803d });
-            for (let i = 0; i < 65; i++) {
-                const tx = (Math.random() - 0.5) * 270;
-                const tz = (Math.random() - 0.5) * 270;
-                // Hindari pusat dan area zona
-                if (Math.hypot(tx, tz) < 30) continue;
+            const lakeSign = createCanvasLabel('🏞️ DANAU KRISTAL UTARA', '#0369a1', '#ffffff', 11, 2.2);
+            lakeSign.position.set(10, 8, -195);
+            scene.add(lakeSign);
+
+            // =========================================================================
+            // WILAYAH 5: GURUN CANDI & BUKIT PASIR TIMUR (Tenggara: +175, +135)
+            // =========================================================================
+            const desertFloor = new THREE.Mesh(
+                new THREE.CircleGeometry(115, 28),
+                new THREE.MeshLambertMaterial({ color: 0xfcd34d })
+            );
+            desertFloor.rotation.x = -Math.PI / 2;
+            desertFloor.position.set(175, 0.06, 135);
+            scene.add(desertFloor);
+
+            // Piramida / Candi Berundak Nusantara
+            addTerrainStep(205, 165, 34, 34, 2.5, 0xd97706);
+            addTerrainStep(205, 165, 22, 22, 5.2, 0xb45309);
+            addTerrainStep(205, 165, 11, 11, 8.0, 0x92400e);
+            const candiSign = createCanvasLabel('🏜️ GURUN CANDI TIMUR', '#78350f', '#fef08a', 11, 2.2);
+            candiSign.position.set(205, 12, 165);
+            scene.add(candiSign);
+
+            // =========================================================================
+            // WILAYAH 6: PANTAI TROPIS & LAUTAN SELATAN (Selatan: 0, +235)
+            // =========================================================================
+            const beachSand = new THREE.Mesh(
+                new THREE.BoxGeometry(580, 0.16, 70),
+                new THREE.MeshLambertMaterial({ color: 0xfef08a })
+            );
+            beachSand.position.set(0, 0.08, 215);
+            scene.add(beachSand);
+
+            const oceanWater = new THREE.Mesh(
+                new THREE.BoxGeometry(620, 0.24, 65),
+                new THREE.MeshLambertMaterial({ color: 0x0284c7 })
+            );
+            oceanWater.position.set(0, 0.12, 275);
+            scene.add(oceanWater);
+
+            // Dermaga kayu menjorok ke laut
+            addTerrainStep(0, 245, 10, 44, 0.9, 0x92400e);
+            const beachSign = createCanvasLabel('🏖️ PANTAI NUSANTARA SELATAN', '#0e7490', '#ffffff', 12, 2.3);
+            beachSign.position.set(0, 7, 225);
+            scene.add(beachSign);
+
+            // =========================================================================
+            // WILAYAH 7: PERKAMPUNGAN & KEBUN BARAT (Barat Daya: -185, +115)
+            // =========================================================================
+            const farmHouses = [
+                [-175, 95, 0xef4444],
+                [-205, 125, 0x3b82f6],
+                [-165, 145, 0xf59e0b]
+            ];
+            farmHouses.forEach(([hx, hz, roofCol]) => {
+                addStaticBox(hx, 3, hz, 10, 6, 9, 0xfef3c7, true);
+                const roof = new THREE.Mesh(new THREE.ConeGeometry(8, 4, 4), new THREE.MeshLambertMaterial({ color: roofCol }));
+                roof.position.set(hx, 8, hz);
+                roof.rotation.y = Math.PI / 4;
+                scene.add(roof);
+            });
+            const villageSign = createCanvasLabel('🌻 KAMPUNG & KEBUN BARAT', '#3f6212', '#fef08a', 11.5, 2.2);
+            villageSign.position.set(-185, 10, 115);
+            scene.add(villageSign);
+
+            // =========================================================================
+            // POHON-POHON HUTAN & POHON KELAPA PANTAI (180 POHON)
+            // =========================================================================
+            const trunkMat = new THREE.MeshLambertMaterial({ color: 0x78350f });
+            const leafMat = new THREE.MeshLambertMaterial({ color: 0x166534 });
+            const pineLeafMat = new THREE.MeshLambertMaterial({ color: 0x065f46 });
+
+            for (let i = 0; i < 180; i++) {
+                // Lebih padat di area Hutan Rimba Timur Laut
+                const inDenseForest = i < 85;
+                const tx = inDenseForest ? (75 + Math.random() * 195) : ((Math.random() - 0.5) * 540);
+                const tz = inDenseForest ? (-235 + Math.random() * 195) : ((Math.random() - 0.5) * 520);
+
+                // Hindari pusat kota, jalan raya utama, danau, dan zona belajar
+                if (Math.hypot(tx, tz) < 88) continue;
+                if (Math.abs(tx) < 12 || Math.abs(tz) < 12) continue;
+                if (Math.hypot(tx - 10, tz + 195) < 48) continue;
+                if (tz > 195) continue; // Pantai punya pohon kelapa sendiri
+                if (tx > 110 && tz > 75) continue; // Gurun pasir
+
                 let nearZone = false;
                 for (const zc of ZONES_CONFIG) {
-                    if (Math.hypot(tx - zc.x, tz - zc.z) < 22) nearZone = true;
+                    if (Math.hypot(tx - zc.x, tz - zc.z) < 25) nearZone = true;
                 }
-                if (nearZone || Math.hypot(tx, tz + 112) < 26) continue;
+                if (nearZone) continue;
 
+                const baseH = getGroundHeightAt(tx, tz);
                 const tree = new THREE.Group();
-                const trunk = new THREE.Mesh(new THREE.BoxGeometry(1.1, 3.5, 1.1), trunkMat);
-                trunk.position.y = 1.75;
-                const crown = new THREE.Mesh(new THREE.BoxGeometry(4.2, 3.8, 4.2), leafMat);
-                crown.position.y = 4.8;
-                tree.add(trunk, crown);
-                tree.position.set(tx, 0, tz);
+                const trunk = new THREE.Mesh(new THREE.BoxGeometry(1.2, 4.2, 1.2), trunkMat);
+                trunk.position.y = 2.1;
+
+                if (tx < -100 && tz < -100) {
+                    // Pohon cemara di pegunungan
+                    const cone1 = new THREE.Mesh(new THREE.ConeGeometry(3.2, 5, 6), pineLeafMat);
+                    cone1.position.y = 5.5;
+                    const cone2 = new THREE.Mesh(new THREE.ConeGeometry(2.2, 4, 6), pineLeafMat);
+                    cone2.position.y = 8.0;
+                    tree.add(trunk, cone1, cone2);
+                } else {
+                    const crown = new THREE.Mesh(new THREE.BoxGeometry(4.6, 4.4, 4.6), leafMat);
+                    crown.position.y = 5.6;
+                    tree.add(trunk, crown);
+                }
+
+                tree.position.set(tx, baseH, tz);
                 scene.add(tree);
+            }
+
+            // Pohon kelapa di sepanjang pantai selatan
+            for (let px = -240; px <= 240; px += 35) {
+                if (Math.abs(px) < 18) continue;
+                const palm = new THREE.Group();
+                const pTrunk = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.7, 7, 8), trunkMat);
+                pTrunk.position.y = 3.5;
+                const pLeaves = new THREE.Mesh(new THREE.ConeGeometry(4.2, 2.2, 7), leafMat);
+                pLeaves.position.y = 7.4;
+                palm.add(pTrunk, pLeaves);
+                palm.position.set(px, 0, 205);
+                scene.add(palm);
             }
         }
 
         function buildSixLearningZones() {
             ZONES_CONFIG.forEach(zone => {
+                const baseH = getGroundHeightAt(zone.x, zone.z);
                 const g = new THREE.Group();
-                g.position.set(zone.x, 0, zone.z);
+                g.position.set(zone.x, baseH, zone.z);
 
-                // Pelataran zona
                 const pad = new THREE.Mesh(
-                    new THREE.CylinderGeometry(18, 18, 0.2, 24),
+                    new THREE.CylinderGeometry(19, 19, 0.25, 24),
                     new THREE.MeshLambertMaterial({ color: zone.color })
                 );
-                pad.position.y = 0.1;
+                pad.position.y = 0.12;
                 pad.receiveShadow = true;
                 g.add(pad);
 
-                // Bangunan khas per mata pelajaran
                 if (zone.id === 'Matematika') {
-                    // Gedung Matematika biru + simbol kubus & piramida angka
-                    addStaticBox(zone.x, 5, zone.z - 8, 14, 10, 8, 0x1d4ed8, true);
+                    addStaticBox(zone.x, baseH + 5, zone.z - 8, 14, 10, 8, 0x1d4ed8, true);
                     const roof = new THREE.Mesh(new THREE.ConeGeometry(9, 4, 4), new THREE.MeshLambertMaterial({ color: 0xfacc15 }));
                     roof.position.set(0, 12, -8);
                     roof.rotation.y = Math.PI / 4;
                     g.add(roof);
                 } else if (zone.id === 'IPAS') {
-                    // Area IPAS hijau + model tata surya berputar
-                    addStaticBox(zone.x, 3.5, zone.z - 8, 12, 7, 7, 0x15803d, true);
+                    addStaticBox(zone.x, baseH + 3.5, zone.z - 8, 12, 7, 7, 0x15803d, true);
                     const sun = new THREE.Mesh(new THREE.SphereGeometry(2.2, 12, 12), new THREE.MeshBasicMaterial({ color: 0xfacc15 }));
                     sun.position.set(0, 10, -8);
                     const planet = new THREE.Mesh(new THREE.SphereGeometry(0.9, 10, 10), new THREE.MeshLambertMaterial({ color: 0x38bdf8 }));
                     planet.position.set(4.5, 10, -8);
                     g.add(sun, planet);
                 } else if (zone.id === 'Bahasa Indonesia') {
-                    // Perpustakaan Oranye + Rak Buku Raksasa
-                    addStaticBox(zone.x, 4.5, zone.z - 8, 15, 9, 8, 0xc2410c, true);
+                    addStaticBox(zone.x, baseH + 4.5, zone.z - 8, 15, 9, 8, 0xc2410c, true);
                     const bookColors = [0xfef08a, 0x38bdf8, 0x4ade80, 0xf472b6];
                     for (let b = -4; b <= 4; b += 2) {
                         const book = new THREE.Mesh(
@@ -1354,20 +1564,17 @@
                         g.add(book);
                     }
                 } else if (zone.id === 'PKN') {
-                    // Balai PKN Merah Putih + Pilar Pancasila
-                    addStaticBox(zone.x, 4.5, zone.z - 8, 16, 9, 8, 0xb91c1c, true);
+                    addStaticBox(zone.x, baseH + 4.5, zone.z - 8, 16, 9, 8, 0xb91c1c, true);
                     const whiteBand = new THREE.Mesh(new THREE.BoxGeometry(16.2, 3, 8.2), new THREE.MeshLambertMaterial({ color: 0xffffff }));
                     whiteBand.position.set(0, 3, -8);
                     g.add(whiteBand);
                 } else if (zone.id === 'Koding') {
-                    // Lab Koding Ungu Neon + Layar Monitor Raksasa
-                    addStaticBox(zone.x, 4.5, zone.z - 8, 14, 9, 8, 0x5b21b6, true);
+                    addStaticBox(zone.x, baseH + 4.5, zone.z - 8, 14, 9, 8, 0x5b21b6, true);
                     const screen = new THREE.Mesh(new THREE.BoxGeometry(9, 5, 0.5), new THREE.MeshBasicMaterial({ color: 0x22d3ee }));
                     screen.position.set(0, 5.5, -3.8);
                     g.add(screen);
                 } else if (zone.id === 'AI') {
-                    // Pusat AI Cyan + Chip & Kepala Robot Raksasa
-                    addStaticBox(zone.x, 4.5, zone.z - 8, 14, 9, 8, 0x0e7490, true);
+                    addStaticBox(zone.x, baseH + 4.5, zone.z - 8, 14, 9, 8, 0x0e7490, true);
                     const robotHead = new THREE.Mesh(new THREE.BoxGeometry(5, 4, 5), new THREE.MeshLambertMaterial({ color: 0xe2e8f0 }));
                     robotHead.position.set(0, 11.2, -8);
                     const visor = new THREE.Mesh(new THREE.BoxGeometry(4, 1.2, 0.4), new THREE.MeshBasicMaterial({ color: 0x22d3ee }));
@@ -1375,9 +1582,8 @@
                     g.add(robotHead, visor);
                 }
 
-                // Papan Nama Zona di atas gedung
-                const sign = createCanvasLabel(`${zone.icon} ${zone.title}`, zone.hex, '#ffffff', 10, 2.3);
-                sign.position.set(0, 13.8, -4);
+                const sign = createCanvasLabel(`${zone.icon} ${zone.title}`, zone.hex, '#ffffff', 11, 2.3);
+                sign.position.set(0, 14.2, -4);
                 g.add(sign);
 
                 scene.add(g);
@@ -1386,13 +1592,13 @@
         }
 
         const playerState = {
-            pos: new THREE.Vector3(0, 0, 12),
+            pos: new THREE.Vector3(0, 0, 14),
             vel: new THREE.Vector3(0, 0, 0),
             facingAngle: 0,
             isGrounded: true,
-            walkSpeed: 13,
-            sprintSpeed: 22,
-            jumpForce: 15,
+            walkSpeed: 15,
+            sprintSpeed: 25,
+            jumpForce: 16,
             gravity: 36,
             walkPhase: 0,
             attackCooldown: 0,
@@ -1403,7 +1609,6 @@
         function buildPlayerRobloxCharacter() {
             playerGroup = new THREE.Group();
 
-            // Badan (Torso biru khas seragam SD / Roblox)
             const torso = new THREE.Mesh(
                 new THREE.BoxGeometry(1.4, 1.6, 0.75),
                 new THREE.MeshLambertMaterial({ color: 0x2563eb })
@@ -1411,7 +1616,6 @@
             torso.position.y = 1.7;
             torso.castShadow = true;
 
-            // Kepala kuning khas Roblox
             const head = new THREE.Mesh(
                 new THREE.BoxGeometry(1.1, 1.1, 1.1),
                 new THREE.MeshLambertMaterial({ color: 0xfde047 })
@@ -1419,14 +1623,12 @@
             head.position.y = 3.05;
             head.castShadow = true;
 
-            // Mata & Senyum
             const eyeMat = new THREE.MeshBasicMaterial({ color: 0x0f172a });
             const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.22, 0.08), eyeMat);
             eyeL.position.set(-0.24, 3.12, 0.56);
             const eyeR = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.22, 0.08), eyeMat);
             eyeR.position.set(0.24, 3.12, 0.56);
 
-            // Lengan Kiri & Kanan (dengan pivot bahu)
             const armGeo = new THREE.BoxGeometry(0.55, 1.5, 0.55);
             const armMat = new THREE.MeshLambertMaterial({ color: 0xfde047 });
 
@@ -1444,7 +1646,7 @@
             rightArmMesh.castShadow = true;
             rightArmPivot.add(rightArmMesh);
 
-            // Model 3D Senjata 1: Tongkat Pensil Ilmu
+            // Senjata 1: Tongkat Pensil
             const pencilGroup = new THREE.Group();
             const wand = new THREE.Mesh(
                 new THREE.BoxGeometry(0.22, 0.22, 1.8),
@@ -1460,7 +1662,7 @@
             pencilGroup.add(wand, tip);
             rightArmPivot.add(pencilGroup);
 
-            // Model 3D Senjata 2: Busur Panah Pengetahuan
+            // Senjata 2: Busur Panah
             const bowGroup = new THREE.Group();
             const bowArc = new THREE.Mesh(
                 new THREE.TorusGeometry(0.85, 0.09, 8, 16, Math.PI),
@@ -1477,7 +1679,7 @@
             bowGroup.visible = false;
             rightArmPivot.add(bowGroup);
 
-            // Model 3D Senjata 3: Blaster Gelembung Ilmu
+            // Senjata 3: Blaster Tembak
             const blasterGroup = new THREE.Group();
             const gunBody = new THREE.Mesh(
                 new THREE.BoxGeometry(0.32, 0.42, 1.15),
@@ -1500,7 +1702,6 @@
                 blaster: blasterGroup
             };
 
-            // Kaki Kiri & Kanan (Celana merah pramuka/SD)
             const legGeo = new THREE.BoxGeometry(0.62, 1.0, 0.65);
             const legMat = new THREE.MeshLambertMaterial({ color: 0xdc2626 });
 
@@ -1534,11 +1735,11 @@
 
         function spawnAllEnemiesAndNPCs() {
             ZONES_CONFIG.forEach(zone => {
-                // 1. NPC Guru Ramah di depan gedung zona
                 const npcX = zone.x - 4.5;
                 const npcZ = zone.z + 4.5;
+                const npcBaseY = getGroundHeightAt(npcX, npcZ);
                 const npcGroup = new THREE.Group();
-                npcGroup.position.set(npcX, 0, npcZ);
+                npcGroup.position.set(npcX, npcBaseY, npcZ);
 
                 const torso = new THREE.Mesh(
                     new THREE.BoxGeometry(1.4, 1.6, 0.75),
@@ -1573,30 +1774,30 @@
                     labelMesh: label
                 });
 
-                // 2. Dua Monster Edukasi per Zona
+                // 3 Monster Edukasi per Zona (ditambah monster di hutan & gunung)
                 spawnSingleEnemy(zone, zone.x + 8, zone.z + 6);
                 spawnSingleEnemy(zone, zone.x - 9, zone.z + 10);
+                spawnSingleEnemy(zone, zone.x + 12, zone.z - 5);
             });
         }
 
         function spawnBombTraps() {
-            // Penempatan jebakan bom di jalur strategis menuju zona belajar (bisa dilompati!)
             const bombCoords = [
-                { x: -32, z: -30 },
-                { x: 32, z: -30 },
-                { x: -45, z: 10 },
-                { x: 45, z: 10 },
-                { x: -30, z: 42 },
-                { x: 30, z: 42 },
-                { x: 0, z: -48 },
-                { x: 0, z: 52 }
+                { x: -38, z: -35 },
+                { x: 38, z: -35 },
+                { x: -75, z: 22 },
+                { x: 75, z: 22 },
+                { x: -115, z: -125 },
+                { x: 115, z: -65 },
+                { x: 110, z: 85 },
+                { x: 0, z: 115 }
             ];
 
             bombCoords.forEach(pos => {
+                const by = getGroundHeightAt(pos.x, pos.z);
                 const group = new THREE.Group();
-                group.position.set(pos.x, 0, pos.z);
+                group.position.set(pos.x, by, pos.z);
 
-                // Lingkaran zona bahaya merah di tanah
                 const dangerRing = new THREE.Mesh(
                     new THREE.RingGeometry(1.1, 1.65, 24),
                     new THREE.MeshBasicMaterial({ color: 0xef4444, side: THREE.DoubleSide })
@@ -1604,7 +1805,6 @@
                 dangerRing.rotation.x = -Math.PI / 2;
                 dangerRing.position.y = 0.12;
 
-                // Badan Bom Bulat Hitam
                 const bombSphere = new THREE.Mesh(
                     new THREE.SphereGeometry(0.85, 14, 14),
                     new THREE.MeshLambertMaterial({ color: 0x1e293b })
@@ -1612,7 +1812,6 @@
                 bombSphere.position.y = 0.85;
                 bombSphere.castShadow = true;
 
-                // Sumbu & Lampu Merah Berkedip di atas bom
                 const fuse = new THREE.Mesh(
                     new THREE.CylinderGeometry(0.12, 0.12, 0.45, 8),
                     new THREE.MeshBasicMaterial({ color: 0xfef08a })
@@ -1633,6 +1832,7 @@
 
                 bombTraps.push({
                     x: pos.x,
+                    y: by,
                     z: pos.z,
                     group,
                     blinkLed,
@@ -1645,7 +1845,6 @@
         function triggerBombExplosion(bomb) {
             bomb.cooldown = 3.5;
 
-            // Efek bola ledakan 3D membesar
             const boomGeo = new THREE.SphereGeometry(1.2, 16, 16);
             const boomMat = new THREE.MeshBasicMaterial({
                 color: 0xf97316,
@@ -1653,7 +1852,7 @@
                 opacity: 0.9
             });
             const boomMesh = new THREE.Mesh(boomGeo, boomMat);
-            boomMesh.position.set(bomb.x, 1.2, bomb.z);
+            boomMesh.position.set(bomb.x, bomb.y + 1.2, bomb.z);
             scene.add(boomMesh);
 
             let scale = 1;
@@ -1669,14 +1868,13 @@
                 }
             }, 30);
 
-            // Flash merah di layar & eliminasi langsung karakter siswa
             const flash = document.getElementById('damage-flash');
             flash.style.opacity = '1';
             setTimeout(() => { flash.style.opacity = '0'; }, 350);
 
             playerData.hp = 0;
             updateHUD();
-            document.getElementById('gameover-modal').querySelector('h2').textContent = '💥 Terkena Jebakan Bom!';
+            document.getElementById('gameover-title').textContent = '💥 Terkena Jebakan Bom!';
             gameState.modalOpen = true;
             document.getElementById('gameover-modal').classList.remove('hidden');
         }
@@ -1690,17 +1888,17 @@
 
                 if (gameState.paused || gameState.modalOpen || bomb.cooldown > 0) return;
 
-                // Cek jarak mendatar & ketinggian lompatan (jika siswa melompat tinggi > 1.75 unit, selamat!)
                 const dist = Math.hypot(playerState.pos.x - bomb.x, playerState.pos.z - bomb.z);
-                if (dist < 1.55 && playerState.pos.y < 1.75) {
+                if (dist < 1.55 && (playerState.pos.y - bomb.y) < 1.75) {
                     triggerBombExplosion(bomb);
                 }
             });
         }
 
         function spawnSingleEnemy(zone, homeX, homeZ) {
+            const homeY = getGroundHeightAt(homeX, homeZ);
             const eGroup = new THREE.Group();
-            eGroup.position.set(homeX, 0, homeZ);
+            eGroup.position.set(homeX, homeY, homeZ);
 
             const body = new THREE.Mesh(
                 new THREE.BoxGeometry(1.6, 1.6, 1.6),
@@ -1720,7 +1918,6 @@
             const pR = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.18, 0.12), pupilMat);
             pR.position.set(0.38, 1.25, 0.82);
 
-            // Health Bar 3D di atas kepala musuh
             const hpBg = new THREE.Mesh(
                 new THREE.PlaneGeometry(2.2, 0.32),
                 new THREE.MeshBasicMaterial({ color: 0x1e293b, side: THREE.DoubleSide })
@@ -1733,7 +1930,7 @@
             );
             hpFill.position.set(0, 2.55, 0.02);
 
-            const nameTag = createCanvasLabel(`👾 ${zone.enemyName}`, '#7f1d1d', '#ffffff', 5.2, 1.0);
+            const nameTag = createCanvasLabel(`👾 ${zone.enemyName}`, '#7f1d1d', '#ffffff', 5.4, 1.0);
             nameTag.position.set(0, 3.3, 0);
 
             eGroup.add(body, eyeL, eyeR, pL, pR, hpBg, hpFill, nameTag);
@@ -1760,23 +1957,49 @@
 
         /**
          * ============================================================================
-         * 5. COMBAT: SERANGAN PEMAIN, DAMAGE FLASH, KNOCKBACK & AI MUSUH
+         * 4. SISTEM PERTARUNGAN & SERANGAN (TERPERBAIKI PENUH: MELEE + RANGED)
          * ============================================================================
          */
+        function applyDamageToEnemy(enemy, dmgAmount, dirX, dirZ) {
+            if (!enemy || !enemy.alive) return;
+            enemy.hp -= dmgAmount;
+            enemy.hitFlashTimer = 0.18;
+            enemy.bodyMesh.material.color.setHex(0xffffff);
+
+            const dist = Math.hypot(dirX, dirZ) || 1;
+            enemy.knockbackVel.set((dirX / dist) * 15, 0, (dirZ / dist) * 15);
+
+            const ratio = Math.max(0, enemy.hp / enemy.maxHp);
+            enemy.hpFillMesh.scale.x = Math.max(0.001, ratio);
+            enemy.hpFillMesh.position.x = -(1 - ratio) * 1.04;
+
+            if (enemy.hp <= 0) {
+                enemy.alive = false;
+                enemy.mesh.visible = false;
+                enemy.respawnTimer = 8.0;
+                showToast(`⚔️ ${enemy.name} dikalahkan! Jawab kuis ${enemy.zoneId}!`);
+                setTimeout(() => openQuizModal(enemy.zoneId), 420);
+            }
+        }
+
         function triggerPlayerAttack() {
             if (!gameState.started || gameState.paused || gameState.modalOpen) return;
             if (playerState.attackCooldown > 0) return;
 
-            playerState.attackCooldown = 0.35;
+            const currentWeaponId = playerData.equippedWeapon || 'pencil';
+            const weaponCfg = WEAPONS_CONFIG[currentWeaponId] || WEAPONS_CONFIG.pencil;
+            const totalDamage = Math.round(playerData.damage * weaponCfg.damageMult);
+
+            playerState.attackCooldown = weaponCfg.cooldown;
             playerState.attackSwing = 1.0;
 
-            // Efek cincin tebasan 3D singkat di sekitar pemain agar serangan terlihat jelas
-            const slashGeo = new THREE.RingGeometry(1.2, 4.4, 24);
+            // Efek cincin tebasan 3D di sekitar pemain agar aksi tombol serang selalu terlihat
+            const slashGeo = new THREE.RingGeometry(1.1, 4.8, 24);
             const slashMat = new THREE.MeshBasicMaterial({
-                color: 0xfacc15,
+                color: weaponCfg.color,
                 side: THREE.DoubleSide,
                 transparent: true,
-                opacity: 0.75
+                opacity: 0.8
             });
             const slashMesh = new THREE.Mesh(slashGeo, slashMat);
             slashMesh.rotation.x = -Math.PI / 2;
@@ -1786,9 +2009,55 @@
                 scene.remove(slashMesh);
                 slashGeo.dispose();
                 slashMat.dispose();
-            }, 160);
+            }, 170);
 
-            // Cek semua musuh hidup dalam jangkauan serangan (radius 5.2 unit di sekitar pemain)
+            // Jika memakai Panah atau Blaster: tembakkan proyektil jarak jauh + serang jarak dekat jika menempel
+            if (currentWeaponId === 'bow' || currentWeaponId === 'blaster') {
+                const dirX = Math.sin(playerState.facingAngle);
+                const dirZ = Math.cos(playerState.facingAngle);
+
+                const projGroup = new THREE.Group();
+                projGroup.position.set(
+                    playerState.pos.x + dirX * 1.4,
+                    playerState.pos.y + 1.65,
+                    playerState.pos.z + dirZ * 1.4
+                );
+                projGroup.rotation.y = playerState.facingAngle;
+
+                if (currentWeaponId === 'bow') {
+                    const shaft = new THREE.Mesh(
+                        new THREE.BoxGeometry(0.14, 0.14, 1.8),
+                        new THREE.MeshBasicMaterial({ color: 0xfacc15 })
+                    );
+                    const head = new THREE.Mesh(
+                        new THREE.ConeGeometry(0.24, 0.5, 6),
+                        new THREE.MeshBasicMaterial({ color: 0x22c55e })
+                    );
+                    head.rotation.x = Math.PI / 2;
+                    head.position.z = 1.0;
+                    projGroup.add(shaft, head);
+                } else {
+                    const orb = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.38, 10, 10),
+                        new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
+                    );
+                    const core = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.2, 8, 8),
+                        new THREE.MeshBasicMaterial({ color: 0xffffff })
+                    );
+                    projGroup.add(orb, core);
+                }
+
+                scene.add(projGroup);
+                activeProjectiles.push({
+                    mesh: projGroup,
+                    vel: new THREE.Vector3(dirX * weaponCfg.projSpeed, 0, dirZ * weaponCfg.projSpeed),
+                    damage: totalDamage,
+                    life: 1.5
+                });
+            }
+
+            // Cek semua monster hidup dalam radius jangkauan (6.0 unit)
             let hitCount = 0;
             enemies.forEach(enemy => {
                 if (!enemy.alive) return;
@@ -1796,34 +2065,14 @@
                 const dz = enemy.mesh.position.z - playerState.pos.z;
                 const dist = Math.hypot(dx, dz);
 
-                if (dist <= 5.2) {
+                if (dist <= 6.0) {
                     hitCount++;
-                    enemy.hp -= playerData.damage;
-                    enemy.hitFlashTimer = 0.18;
-                    enemy.bodyMesh.material.color.setHex(0xffffff);
-
-                    // Efek Knockback menjauh dari pemain
-                    const nx = dist > 0.01 ? dx / dist : 0;
-                    const nz = dist > 0.01 ? dz / dist : 1;
-                    enemy.knockbackVel.set(nx * 14, 0, nz * 14);
-
-                    // Update Health Bar musuh
-                    const ratio = Math.max(0, enemy.hp / enemy.maxHp);
-                    enemy.hpFillMesh.scale.x = Math.max(0.001, ratio);
-                    enemy.hpFillMesh.position.x = -(1 - ratio) * 1.04;
-
-                    if (enemy.hp <= 0) {
-                        enemy.alive = false;
-                        enemy.mesh.visible = false;
-                        enemy.respawnTimer = 8.0; // Respawn setelah 8 detik
-                        showToast(`⚔️ ${enemy.name} dikalahkan! Jawab kuis ${enemy.zoneId}!`);
-                        setTimeout(() => openQuizModal(enemy.zoneId), 450);
-                    }
+                    applyDamageToEnemy(enemy, totalDamage, dx, dz);
                 }
             });
 
             if (hitCount > 0) {
-                showToast(`💥 Serangan mengenai monster! (-${playerData.damage} HP)`);
+                showToast(`💥 Serangan mengenai ${hitCount} monster! (-${totalDamage} HP)`);
             }
         }
 
@@ -1836,13 +2085,12 @@
                         enemy.hp = enemy.maxHp;
                         enemy.hpFillMesh.scale.x = 1;
                         enemy.hpFillMesh.position.x = 0;
-                        enemy.mesh.position.set(enemy.homeX, 0, enemy.homeZ);
+                        enemy.mesh.position.set(enemy.homeX, getGroundHeightAt(enemy.homeX, enemy.homeZ), enemy.homeZ);
                         enemy.mesh.visible = true;
                     }
                     return;
                 }
 
-                // Pulihkan warna flash saat terkena hit
                 if (enemy.hitFlashTimer > 0) {
                     enemy.hitFlashTimer -= dt;
                     if (enemy.hitFlashTimer <= 0) {
@@ -1850,13 +2098,14 @@
                     }
                 }
 
-                // Terapkan knockback
                 if (enemy.knockbackVel.lengthSq() > 0.1) {
                     enemy.mesh.position.addScaledVector(enemy.knockbackVel, dt);
                     enemy.knockbackVel.multiplyScalar(0.84);
                 }
 
-                // Billboarding health bar menghadap kamera
+                // Sesuaikan ketinggian musuh mengikuti kontur bukit/gunung
+                enemy.mesh.position.y = getGroundHeightAt(enemy.mesh.position.x, enemy.mesh.position.z);
+
                 enemy.hpFillMesh.parent.children.forEach(child => {
                     if (child.geometry && child.geometry.type === 'PlaneGeometry') {
                         child.lookAt(camera.position);
@@ -1869,22 +2118,19 @@
                 const dz = playerState.pos.z - enemy.mesh.position.z;
                 const distToPlayer = Math.hypot(dx, dz);
 
-                // AI Mengejar pemain dalam radius 18 unit
-                if (distToPlayer < 18 && distToPlayer > 2.1) {
-                    const moveSpeed = 5.4;
+                if (distToPlayer < 22 && distToPlayer > 2.1) {
+                    const moveSpeed = 5.6;
                     enemy.mesh.position.x += (dx / distToPlayer) * moveSpeed * dt;
                     enemy.mesh.position.z += (dz / distToPlayer) * moveSpeed * dt;
                     enemy.mesh.rotation.y = Math.atan2(dx, dz);
                     enemy.bodyMesh.position.y = 1.0 + Math.abs(Math.sin(time * 0.01)) * 0.35;
                 } else if (distToPlayer <= 2.2) {
-                    // Menyerang pemain saat dekat!
                     enemy.attackTimer -= dt;
                     if (enemy.attackTimer <= 0 && playerState.invulnTimer <= 0) {
                         enemy.attackTimer = 1.3;
                         damagePlayer(12, enemy.name, dx, dz);
                     }
                 } else {
-                    // Kembali perlahan ke titik patroli awal
                     const hx = enemy.homeX - enemy.mesh.position.x;
                     const hz = enemy.homeZ - enemy.mesh.position.z;
                     const hDist = Math.hypot(hx, hz);
@@ -1900,12 +2146,10 @@
             playerData.hp = Math.max(0, playerData.hp - amount);
             playerState.invulnTimer = 0.8;
 
-            // Efek Flash Merah di layar
             const flash = document.getElementById('damage-flash');
             flash.style.opacity = '1';
             setTimeout(() => { flash.style.opacity = '0'; }, 180);
 
-            // Knockback pemain
             const dist = Math.hypot(dx, dz) || 1;
             playerState.vel.x = (dx / dist) * 14;
             playerState.vel.z = (dz / dist) * 14;
@@ -1914,6 +2158,7 @@
             updateHUD();
 
             if (playerData.hp <= 0) {
+                document.getElementById('gameover-title').textContent = '💫 HP Habis!';
                 gameState.modalOpen = true;
                 document.getElementById('gameover-modal').classList.remove('hidden');
             } else {
@@ -1923,7 +2168,7 @@
 
         /**
          * ============================================================================
-         * 7. KUIS: POPUP SOAL PILIHAN GANDA, REWARD & RAPOR BELAJAR
+         * 5. KUIS, RAPOR & KLASMEN
          * ============================================================================
          */
         function getQuestionForZoneAndGrade(zoneId) {
@@ -1959,6 +2204,7 @@
             const letters = ['A', 'B', 'C', 'D'];
             qObj.opts.forEach((optText, idx) => {
                 const btn = document.createElement('button');
+                btn.type = 'button';
                 btn.className = 'btn-roblox w-full text-left bg-white hover:bg-sky-50 border-3 border-slate-300 hover:border-blue-500 rounded-2xl p-3.5 font-bold text-slate-800 text-sm md:text-base flex items-center gap-3';
                 btn.innerHTML = `
                     <span class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">${letters[idx]}</span>
@@ -2065,11 +2311,35 @@
             });
         }
 
-        /**
-         * ============================================================================
-         * 8. KLASMEN: LEADERBOARD PERSISTEN DI LOCALSTORAGE (UMUM & PER MAPEL)
-         * ============================================================================
-         */
+        function renderTeleportModal() {
+            const list = document.getElementById('teleport-list');
+            list.innerHTML = '';
+
+            const destinations = [
+                ...ZONES_CONFIG.map(z => ({ label: `${z.icon} ${z.title}`, sub: 'Zona Belajar & Guru', x: z.x, z: z.z + 12 })),
+                ...WORLD_REGIONS.map(r => ({ label: r.name, sub: 'Wilayah Eksplorasi', x: r.x, z: r.z + 10 }))
+            ];
+
+            destinations.forEach(dest => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'btn-roblox bg-sky-50 hover:bg-sky-100 border-2 border-sky-300 rounded-2xl p-3 text-left';
+                btn.innerHTML = `
+                    <div class="font-bold text-slate-800 text-xs sm:text-sm truncate">${dest.label}</div>
+                    <div class="text-[10px] text-slate-500 font-semibold">${dest.sub}</div>
+                `;
+                btn.onclick = () => {
+                    const targetY = getGroundHeightAt(dest.x, dest.z);
+                    playerState.pos.set(dest.x, targetY, dest.z);
+                    playerState.vel.set(0, 0, 0);
+                    document.getElementById('teleport-modal').classList.add('hidden');
+                    gameState.modalOpen = false;
+                    showToast(`🚀 Berpindah ke ${dest.label}!`);
+                };
+                list.appendChild(btn);
+            });
+        }
+
         function getPersistentLeaderboard() {
             let board = [];
             try {
@@ -2121,7 +2391,6 @@
             updatePersistentLeaderboard();
             const board = getPersistentLeaderboard();
 
-            // Urutkan berdasarkan XP -> Jumlah Benar -> Koin (atau skor mapel jika filter aktif)
             board.sort((a, b) => {
                 if (filterSubject !== 'ALL') {
                     const sa = (a.subjects && a.subjects[filterSubject]) || 0;
@@ -2159,7 +2428,7 @@
 
         /**
          * ============================================================================
-         * 9. MABAR_200 & REAL-TIME ONLINE MULTIPLAYER (PEERJS + 200 MURID LOD)
+         * 6. MABAR 200 MURID & MULTIPLAYER ONLINE REAL-TIME (PEERJS)
          * ============================================================================
          */
         const BOT_FIRST_NAMES = [
@@ -2169,12 +2438,11 @@
             'Yoga', 'Wulan', 'Fikri', 'Anisa', 'Gilang', 'Tiara', 'Rama', 'Melati', 'Naufal', 'Kartika'
         ];
 
-        // State Koneksi Real-Time Antar Perangkat (PeerJS WebRTC DataChannel)
         const netState = {
             peer: null,
             hostConn: null,
-            clientConns: new Map(), // peerId -> DataConnection
-            remotePlayers: new Map(), // peerId -> { id, name, grade, x, y, z, rotY, xp, mesh, targetPos }
+            clientConns: new Map(),
+            remotePlayers: new Map(),
             myPeerId: 'local_' + Math.random().toString(36).slice(2, 8),
             syncTick: 0
         };
@@ -2344,7 +2612,6 @@
                     activeIds.add(p.id);
                     upsertRemotePlayer(p);
                 });
-                // Hapus pemain yang sudah keluar
                 for (const [id, rp] of netState.remotePlayers.entries()) {
                     if (!activeIds.has(id)) {
                         if (rp.mesh) scene.remove(rp.mesh);
@@ -2368,9 +2635,9 @@
                     xp: pData.xp || 0,
                     x: pData.x || 0,
                     y: pData.y || 0,
-                    z: pData.z || 12,
+                    z: pData.z || 14,
                     rotY: pData.rotY || 0,
-                    targetPos: new THREE.Vector3(pData.x || 0, pData.y || 0, pData.z || 12),
+                    targetPos: new THREE.Vector3(pData.x || 0, pData.y || 0, pData.z || 14),
                     mesh: createRemotePlayerMesh(pData.name || 'Siswa', pData.grade || 1)
                 };
                 rp.mesh.position.copy(rp.targetPos);
@@ -2381,7 +2648,7 @@
                 rp.grade = pData.grade;
                 rp.xp = pData.xp;
                 rp.rotY = pData.rotY;
-                rp.targetPos.set(pData.x || 0, pData.y || 0, pData.z || 12);
+                rp.targetPos.set(pData.x || 0, pData.y || 0, pData.z || 14);
             }
         }
 
@@ -2404,15 +2671,17 @@
             scene.add(mabarBodyInstanced, mabarHeadInstanced);
         }
 
+        let mabarUiTick = 0;
+        let mabarBaselineXP = 0;
+
         function startMabarSession(mode = 'offline', withBots = true) {
             mabarBaselineXP = playerData.xp;
             gameState.mabarActive = true;
             gameState.mabarMode = mode;
             gameState.mabarWithBots = withBots;
-            gameState.mabarTimeLeft = 300; // 5 menit
+            gameState.mabarTimeLeft = 300;
             gameState.mabarParticipants = [];
 
-            // Pemain utama masuk di indeks 0
             gameState.mabarParticipants.push({
                 id: netState.myPeerId,
                 name: playerData.name,
@@ -2438,11 +2707,11 @@
                         xp: Math.floor(Math.random() * 40),
                         isSelf: false,
                         isBot: true,
-                        x: (Math.random() - 0.5) * 40,
-                        z: (Math.random() - 0.5) * 40,
-                        tx: targetZone.x + (Math.random() - 0.5) * 20,
-                        tz: targetZone.z + (Math.random() - 0.5) * 20,
-                        speed: 6 + Math.random() * 6,
+                        x: (Math.random() - 0.5) * 90,
+                        z: (Math.random() - 0.5) * 90,
+                        tx: targetZone.x + (Math.random() - 0.5) * 26,
+                        tz: targetZone.z + (Math.random() - 0.5) * 26,
+                        speed: 7 + Math.random() * 7,
                         pointTimer: 2 + Math.random() * 7
                     });
 
@@ -2469,9 +2738,6 @@
             gameState.modalOpen = false;
         }
 
-        let mabarUiTick = 0;
-        let mabarBaselineXP = 0;
-
         function updateMabarSimulation(dt, time) {
             if (!gameState.mabarActive) return;
 
@@ -2481,7 +2747,6 @@
 
             const selfSessionXP = Math.max(0, playerData.xp - mabarBaselineXP);
 
-            // 1. Sinkronisasi Posisi & Skor Real-Time Antar Perangkat (12x per detik)
             netState.syncTick += dt;
             if (netState.syncTick >= 0.08 && gameState.mabarMode !== 'offline') {
                 netState.syncTick = 0;
@@ -2523,18 +2788,15 @@
                 }
             }
 
-            // 2. Interpolasi Halus Karakter 3D Pemain Online Lainnya
             netState.remotePlayers.forEach(rp => {
                 if (rp.mesh) {
                     rp.mesh.position.lerp(rp.targetPos, 0.25);
                     rp.mesh.rotation.y = rp.rotY;
-                    // Nametag selalu menghadap kamera
                     const tag = rp.mesh.children[4];
                     if (tag) tag.lookAt(camera.position);
                 }
             });
 
-            // 3. Update Murid AI (jika aktif)
             if (gameState.mabarWithBots) {
                 let botInstIdx = 0;
                 for (let i = 0; i < gameState.mabarParticipants.length; i++) {
@@ -2550,8 +2812,8 @@
                         bot.z += (dz / dist) * bot.speed * dt;
                     } else {
                         const nextZone = ZONES_CONFIG[Math.floor(Math.random() * ZONES_CONFIG.length)];
-                        bot.tx = nextZone.x + (Math.random() - 0.5) * 22;
-                        bot.tz = nextZone.z + (Math.random() - 0.5) * 22;
+                        bot.tx = nextZone.x + (Math.random() - 0.5) * 26;
+                        bot.tz = nextZone.z + (Math.random() - 0.5) * 26;
                     }
 
                     bot.pointTimer -= dt;
@@ -2561,14 +2823,15 @@
                     }
 
                     const distToPlayer = Math.hypot(bot.x - playerState.pos.x, bot.z - playerState.pos.z);
-                    if (distToPlayer < 120 && botInstIdx < 199) {
+                    if (distToPlayer < 160 && botInstIdx < 199) {
+                        const botBaseY = getGroundHeightAt(bot.x, bot.z);
                         const hop = Math.abs(Math.sin(time * 0.009 + botInstIdx)) * 0.25;
-                        dummyMatrix.position.set(bot.x, 1.1 + hop, bot.z);
+                        dummyMatrix.position.set(bot.x, botBaseY + 1.1 + hop, bot.z);
                         dummyMatrix.scale.set(1, 1, 1);
                         dummyMatrix.updateMatrix();
                         mabarBodyInstanced.setMatrixAt(botInstIdx, dummyMatrix.matrix);
 
-                        dummyMatrix.position.set(bot.x, 2.3 + hop, bot.z);
+                        dummyMatrix.position.set(bot.x, botBaseY + 2.3 + hop, bot.z);
                         dummyMatrix.updateMatrix();
                         mabarHeadInstanced.setMatrixAt(botInstIdx, dummyMatrix.matrix);
                     } else if (botInstIdx < 199) {
@@ -2585,7 +2848,6 @@
                 mabarHeadInstanced.instanceMatrix.needsUpdate = true;
             }
 
-            // 4. Gabungkan Pemain Asli + Pemain Online + Bot AI untuk Papan Skor Real-Time
             mabarUiTick += dt;
             if (mabarUiTick >= 0.45) {
                 mabarUiTick = 0;
@@ -2650,7 +2912,7 @@
             document.getElementById('mabar-live-panel').classList.add('hidden');
 
             document.getElementById('mabar-final-rank-msg').textContent =
-                `Selamat! ${playerData.name} meraih Peringkat #${selfRank} dari 200 Peserta!`;
+                `Selamat! ${playerData.name} meraih Peringkat #${selfRank} dari ${sorted.length} Peserta!`;
 
             for (let i = 0; i < 3; i++) {
                 const p = sorted[i];
@@ -2665,7 +2927,7 @@
 
         /**
          * ============================================================================
-         * 10. UI & MINIMAP 2D
+         * 7. UI & MINIMAP 2D (PETA LUAS 600x600 DENGAN BIOMA & 6 ZONA)
          * ============================================================================
          */
         let toastTimer = null;
@@ -2710,17 +2972,61 @@
             const ctx = canvas.getContext('2d');
             const w = canvas.width;
             const h = canvas.height;
-            const scale = w / 300; // Peta -150..+150
+            const scale = w / 600; // Peta -300..+300
 
             ctx.clearRect(0, 0, w, h);
-            ctx.fillStyle = '#15803d';
+            ctx.fillStyle = '#22c55e'; // Padang rumput dasar
             ctx.fillRect(0, 0, w, h);
+
+            // Hutan Rimba Timur Laut
+            ctx.fillStyle = '#15803d';
+            ctx.beginPath();
+            ctx.arc(w / 2 + 165 * scale, h / 2 + (-125) * scale, 115 * scale, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Pegunungan Salju Barat Laut
+            ctx.fillStyle = '#94a3b8';
+            ctx.beginPath();
+            ctx.arc(w / 2 + (-175) * scale, h / 2 + (-185) * scale, 95 * scale, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(w / 2 + (-175) * scale, h / 2 + (-185) * scale, 35 * scale, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Gurun Pasir Tenggara
+            ctx.fillStyle = '#facc15';
+            ctx.beginPath();
+            ctx.arc(w / 2 + 175 * scale, h / 2 + 135 * scale, 110 * scale, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Kota Nusantara Pusat
+            ctx.fillStyle = '#cbd5e1';
+            ctx.beginPath();
+            ctx.arc(w / 2, h / 2, 82 * scale, 0, Math.PI * 2);
+            ctx.fill();
 
             // Danau Utara
             ctx.fillStyle = '#38bdf8';
             ctx.beginPath();
-            ctx.arc(w / 2 + 0 * scale, h / 2 + (-112) * scale, 22 * scale, 0, Math.PI * 2);
+            ctx.arc(w / 2 + 10 * scale, h / 2 + (-195) * scale, 42 * scale, 0, Math.PI * 2);
             ctx.fill();
+
+            // Pantai & Laut Selatan
+            ctx.fillStyle = '#fef08a';
+            ctx.fillRect(0, h / 2 + 185 * scale, w, 45 * scale);
+            ctx.fillStyle = '#0284c7';
+            ctx.fillRect(0, h / 2 + 230 * scale, w, 70 * scale);
+
+            // Jalan Raya Utama
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(w / 2, h / 2 - 210 * scale);
+            ctx.lineTo(w / 2, h / 2 + 210 * scale);
+            ctx.moveTo(w / 2 - 210 * scale, h / 2);
+            ctx.lineTo(w / 2 + 210 * scale, h / 2);
+            ctx.stroke();
 
             // Penanda 6 Zona Belajar
             ZONES_CONFIG.forEach(z => {
@@ -2728,14 +3034,14 @@
                 const zy = h / 2 + z.z * scale;
                 ctx.fillStyle = z.hex;
                 ctx.beginPath();
-                ctx.arc(zx, zy, 8, 0, Math.PI * 2);
+                ctx.arc(zx, zy, 6.5, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = 1.5;
                 ctx.stroke();
             });
 
-            // Penanda Posisi Pemain (Titik Kuning Berkedip)
+            // Penanda Posisi Pemain
             const px = w / 2 + playerState.pos.x * scale;
             const py = h / 2 + playerState.pos.z * scale;
             ctx.fillStyle = '#facc15';
@@ -2749,13 +3055,12 @@
 
         /**
          * ============================================================================
-         * 11. GAME_LOOP: FISIKA PEMAIN, INTERAKSI NPC & KONTROL EVENT
+         * 8. FISIKA PEMAIN, SENJATA & KONTROL EVENT (PERBAIKAN TOMBOL SERANG)
          * ============================================================================
          */
         let nearbyNPC = null;
 
         function updatePlayerMovement(dt) {
-            // Input gerak (Mendukung Keyboard + Analog Joystick HP)
             let forward = 0;
             let right = 0;
             if (inputKeys.w) forward += 1;
@@ -2772,9 +3077,9 @@
             const wantsSprint = inputKeys.shift && isMoving && playerData.stamina > 2;
 
             if (wantsSprint) {
-                playerData.stamina = Math.max(0, playerData.stamina - 28 * dt);
+                playerData.stamina = Math.max(0, playerData.stamina - 26 * dt);
             } else {
-                playerData.stamina = Math.min(100, playerData.stamina + 18 * dt);
+                playerData.stamina = Math.min(100, playerData.stamina + 20 * dt);
             }
 
             document.getElementById('hud-stamina-text').textContent = `${Math.round(playerData.stamina)}%`;
@@ -2799,9 +3104,9 @@
 
             playerState.vel.y -= playerState.gravity * dt;
 
-            // Update posisi + deteksi tabrakan kotak bangunan
-            const nextX = Math.max(-145, Math.min(145, playerState.pos.x + playerState.vel.x * dt));
-            const nextZ = Math.max(-145, Math.min(145, playerState.pos.z + playerState.vel.z * dt));
+            // Batas dunia luas 600 x 600 (-290 .. +290)
+            const nextX = Math.max(-WORLD_HALF_SIZE, Math.min(WORLD_HALF_SIZE, playerState.pos.x + playerState.vel.x * dt));
+            const nextZ = Math.max(-WORLD_HALF_SIZE, Math.min(WORLD_HALF_SIZE, playerState.pos.z + playerState.vel.z * dt));
 
             let blocked = false;
             for (const col of worldColliders) {
@@ -2817,9 +3122,11 @@
                 playerState.pos.z = nextZ;
             }
 
+            // Elevasi tanah dinamis (mendaki gunung/candi dengan mulus)
+            const groundY = getGroundHeightAt(playerState.pos.x, playerState.pos.z);
             playerState.pos.y += playerState.vel.y * dt;
-            if (playerState.pos.y <= 0) {
-                playerState.pos.y = 0;
+            if (playerState.pos.y <= groundY) {
+                playerState.pos.y = groundY;
                 playerState.vel.y = 0;
                 playerState.isGrounded = true;
             }
@@ -2827,7 +3134,6 @@
             playerGroup.position.copy(playerState.pos);
             playerGroup.rotation.y = playerState.facingAngle;
 
-            // Animasi ayunan tangan & kaki
             if (isMoving && playerState.isGrounded) {
                 playerState.walkPhase += dt * (wantsSprint ? 15 : 10);
                 const swing = Math.sin(playerState.walkPhase) * 0.75;
@@ -2846,7 +3152,6 @@
                 }
             }
 
-            // Animasi ayunan senjata saat menyerang
             if (playerState.attackSwing > 0) {
                 playerState.attackSwing = Math.max(0, playerState.attackSwing - dt * 4.5);
                 if (playerData.equippedWeapon === 'bow' || playerData.equippedWeapon === 'blaster') {
@@ -2856,21 +3161,33 @@
                 }
             }
 
-            // Deteksi zona terdekat & NPC terdekat
-            let currentZoneText = '🗺️ Alun-Alun Nusantara';
+            // Deteksi Wilayah Bioma & Zona Belajar Terdekat
+            let currentRegionName = '🌿 Padang Rumput Nusantara';
+            let bestRegionDist = Infinity;
+            for (const reg of WORLD_REGIONS) {
+                const d = Math.hypot(playerState.pos.x - reg.x, playerState.pos.z - reg.z);
+                if (d < reg.radius && d < bestRegionDist) {
+                    bestRegionDist = d;
+                    currentRegionName = reg.name;
+                }
+            }
+
+            let currentZoneText = currentRegionName;
             for (const z of ZONES_CONFIG) {
-                if (Math.hypot(playerState.pos.x - z.x, playerState.pos.z - z.z) < 26) {
+                if (Math.hypot(playerState.pos.x - z.x, playerState.pos.z - z.z) < 28) {
                     currentZoneText = `${z.icon} ${z.title}`;
                     gameState.activeZoneId = z.id;
                     break;
                 }
             }
             document.getElementById('hud-zone-label').textContent = currentZoneText;
+            document.getElementById('hud-biome-sub').textContent =
+                `Wilayah: ${currentRegionName} • Koordinat (${Math.round(playerState.pos.x)}, ${Math.round(playerState.pos.z)})`;
 
             nearbyNPC = null;
             for (const npc of friendlyNPCs) {
                 npc.labelMesh.lookAt(camera.position);
-                if (Math.hypot(playerState.pos.x - npc.x, playerState.pos.z - npc.z) < 4.5) {
+                if (Math.hypot(playerState.pos.x - npc.x, playerState.pos.z - npc.z) < 5.0) {
                     nearbyNPC = npc;
                     break;
                 }
@@ -2890,7 +3207,7 @@
             const vHeight = Math.sin(camPitch) * camDist + 2.2;
             const targetCamPos = new THREE.Vector3(
                 playerState.pos.x + Math.sin(camYaw) * hDist,
-                Math.max(1.2, playerState.pos.y + vHeight),
+                Math.max(groundY + 1.4, playerState.pos.y + vHeight),
                 playerState.pos.z + Math.cos(camYaw) * hDist
             );
             camera.position.lerp(targetCamPos, 0.18);
@@ -2925,7 +3242,7 @@
         function cycleNextWeapon() {
             const unlocked = playerData.unlockedWeapons;
             if (unlocked.length <= 1) {
-                showToast('🔍 Jelajahi peta untuk menemukan Busur Panah 🏹 & Blaster Tembak 🔫!');
+                showToast('🔍 Jelajahi Kota, Hutan, dan Gunung untuk menemukan Busur Panah 🏹 & Blaster 🔫!');
                 return;
             }
             const idx = unlocked.indexOf(playerData.equippedWeapon);
@@ -2934,27 +3251,25 @@
         }
 
         function spawnWeaponPickups() {
-            // Lokasi penemuan senjata di peta agar siswa bersemangat bereksplorasi
             const pickupDefs = [
                 { id: 'bow', x: 34, z: -32, label: '🏹 BUSUR PANAH (Ambil!)' },
-                { id: 'bow', x: -38, z: -28, label: '🏹 BUSUR PANAH (Ambil!)' },
+                { id: 'bow', x: 135, z: -105, label: '🏹 BUSUR PANAH HUTAN (Ambil!)' },
                 { id: 'blaster', x: -32, z: 46, label: '🔫 BLASTER TEMBAK (Ambil!)' },
-                { id: 'blaster', x: 35, z: 46, label: '🔫 BLASTER TEMBAK (Ambil!)' }
+                { id: 'blaster', x: -165, z: -175, label: '🔫 BLASTER PUNCAK GUNUNG (Ambil!)' }
             ];
 
             pickupDefs.forEach(def => {
                 const cfg = WEAPONS_CONFIG[def.id];
+                const py = getGroundHeightAt(def.x, def.z);
                 const group = new THREE.Group();
-                group.position.set(def.x, 0, def.z);
+                group.position.set(def.x, py, def.z);
 
-                // Pedestal cahaya di tanah
                 const pad = new THREE.Mesh(
                     new THREE.CylinderGeometry(2.2, 2.5, 0.25, 20),
                     new THREE.MeshBasicMaterial({ color: cfg.color, transparent: true, opacity: 0.75 })
                 );
                 pad.position.y = 0.13;
 
-                // Model senjata melayang
                 const itemMesh = new THREE.Group();
                 itemMesh.position.y = 1.9;
                 if (def.id === 'bow') {
@@ -2981,7 +3296,7 @@
                     itemMesh.add(gunBody, gunTip);
                 }
 
-                const sign = createCanvasLabel(def.label, '#0f172a', '#facc15', 6.8, 1.35);
+                const sign = createCanvasLabel(def.label, '#0f172a', '#facc15', 7.2, 1.35);
                 sign.position.set(0, 3.6, 0);
 
                 group.add(pad, itemMesh, sign);
@@ -2999,14 +3314,13 @@
         }
 
         function updateWeaponPickupsAndProjectiles(dt, time) {
-            // 1. Animasi melayang & deteksi pengambilan senjata oleh siswa
             weaponPickups.forEach(wp => {
                 wp.itemMesh.rotation.y = time * 0.0025;
                 wp.itemMesh.position.y = 1.85 + Math.sin(time * 0.004) * 0.25;
                 wp.signMesh.lookAt(camera.position);
 
                 const dist = Math.hypot(playerState.pos.x - wp.x, playerState.pos.z - wp.z);
-                if (dist < 2.6) {
+                if (dist < 2.8) {
                     if (!playerData.unlockedWeapons.includes(wp.weaponId)) {
                         playerData.unlockedWeapons.push(wp.weaponId);
                         equipWeapon(wp.weaponId);
@@ -3018,7 +3332,6 @@
                 }
             });
 
-            // 2. Update peluru tembak & anak panah jarak jauh
             for (let i = activeProjectiles.length - 1; i >= 0; i--) {
                 const proj = activeProjectiles[i];
                 proj.life -= dt;
@@ -3029,9 +3342,10 @@
                     if (!enemy.alive) continue;
                     const dx = enemy.mesh.position.x - proj.mesh.position.x;
                     const dz = enemy.mesh.position.z - proj.mesh.position.z;
-                    if (Math.hypot(dx, dz) < 2.0) {
+                    if (Math.hypot(dx, dz) < 2.3) {
                         hit = true;
                         applyDamageToEnemy(enemy, proj.damage, proj.vel.x, proj.vel.z);
+                        showToast(`🎯 Tembakan mengenai ${enemy.name}! (-${proj.damage} HP)`);
                         break;
                     }
                 }
@@ -3040,123 +3354,6 @@
                     scene.remove(proj.mesh);
                     activeProjectiles.splice(i, 1);
                 }
-            }
-        }
-
-        function triggerPlayerAttack() {
-            if (!gameState.started || gameState.paused || gameState.modalOpen) return;
-            if (playerState.attackCooldown > 0) return;
-
-            const currentWeaponId = playerData.equippedWeapon || 'pencil';
-            const weaponCfg = WEAPONS_CONFIG[currentWeaponId] || WEAPONS_CONFIG.pencil;
-            const totalDamage = Math.round(playerData.damage * weaponCfg.damageMult);
-
-            playerState.attackCooldown = weaponCfg.cooldown;
-            playerState.attackSwing = 1.0;
-
-            // Mode Senjata Jarak Jauh: Busur Panah atau Blaster Tembak
-            if (currentWeaponId === 'bow' || currentWeaponId === 'blaster') {
-                const dirX = Math.sin(playerState.facingAngle);
-                const dirZ = Math.cos(playerState.facingAngle);
-
-                const projGroup = new THREE.Group();
-                projGroup.position.set(
-                    playerState.pos.x + dirX * 1.4,
-                    playerState.pos.y + 1.65,
-                    playerState.pos.z + dirZ * 1.4
-                );
-                projGroup.rotation.y = playerState.facingAngle;
-
-                if (currentWeaponId === 'bow') {
-                    // Anak Panah Pengetahuan bercahaya hijau-emas
-                    const shaft = new THREE.Mesh(
-                        new THREE.BoxGeometry(0.14, 0.14, 1.8),
-                        new THREE.MeshBasicMaterial({ color: 0xfacc15 })
-                    );
-                    const head = new THREE.Mesh(
-                        new THREE.ConeGeometry(0.24, 0.5, 6),
-                        new THREE.MeshBasicMaterial({ color: 0x22c55e })
-                    );
-                    head.rotation.x = Math.PI / 2;
-                    head.position.z = 1.0;
-                    projGroup.add(shaft, head);
-                } else {
-                    // Peluru Energi Blaster Gelembung Ilmu
-                    const orb = new THREE.Mesh(
-                        new THREE.SphereGeometry(0.36, 10, 10),
-                        new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
-                    );
-                    const core = new THREE.Mesh(
-                        new THREE.SphereGeometry(0.2, 8, 8),
-                        new THREE.MeshBasicMaterial({ color: 0xffffff })
-                    );
-                    projGroup.add(orb, core);
-                }
-
-                scene.add(projGroup);
-                activeProjectiles.push({
-                    mesh: projGroup,
-                    vel: new THREE.Vector3(dirX * weaponCfg.projSpeed, 0, dirZ * weaponCfg.projSpeed),
-                    damage: totalDamage,
-                    life: 1.4
-                });
-                return;
-            }
-
-            // Mode Senjata Jarak Dekat: Tongkat Pensil
-            const slashGeo = new THREE.RingGeometry(1.2, 4.4, 24);
-            const slashMat = new THREE.MeshBasicMaterial({
-                color: 0xfacc15,
-                side: THREE.DoubleSide,
-                transparent: true,
-                opacity: 0.75
-            });
-            const slashMesh = new THREE.Mesh(slashGeo, slashMat);
-            slashMesh.rotation.x = -Math.PI / 2;
-            slashMesh.position.set(playerState.pos.x, playerState.pos.y + 0.35, playerState.pos.z);
-            scene.add(slashMesh);
-            setTimeout(() => {
-                scene.remove(slashMesh);
-                slashGeo.dispose();
-                slashMat.dispose();
-            }, 160);
-
-            let hitCount = 0;
-            enemies.forEach(enemy => {
-                if (!enemy.alive) return;
-                const dx = enemy.mesh.position.x - playerState.pos.x;
-                const dz = enemy.mesh.position.z - playerState.pos.z;
-                const dist = Math.hypot(dx, dz);
-
-                if (dist <= 5.2) {
-                    hitCount++;
-                    applyDamageToEnemy(enemy, totalDamage, dx, dz);
-                }
-            });
-
-            if (hitCount > 0) {
-                showToast(`💥 Serangan mengenai monster! (-${totalDamage} HP)`);
-            }
-        }
-
-        function applyDamageToEnemy(enemy, dmgAmount, dirX, dirZ) {
-            enemy.hp -= dmgAmount;
-            enemy.hitFlashTimer = 0.18;
-            enemy.bodyMesh.material.color.setHex(0xffffff);
-
-            const dist = Math.hypot(dirX, dirZ) || 1;
-            enemy.knockbackVel.set((dirX / dist) * 14, 0, (dirZ / dist) * 14);
-
-            const ratio = Math.max(0, enemy.hp / enemy.maxHp);
-            enemy.hpFillMesh.scale.x = Math.max(0.001, ratio);
-            enemy.hpFillMesh.position.x = -(1 - ratio) * 1.04;
-
-            if (enemy.hp <= 0) {
-                enemy.alive = false;
-                enemy.mesh.visible = false;
-                enemy.respawnTimer = 8.0;
-                showToast(`⚔️ ${enemy.name} dikalahkan! Jawab kuis ${enemy.zoneId}!`);
-                setTimeout(() => openQuizModal(enemy.zoneId), 450);
             }
         }
 
@@ -3185,7 +3382,6 @@
                 startBtn.disabled = !(hasName && hasGrade);
             }
 
-            // Muat data tersimpan di Start Screen
             if (playerData.name) nameInput.value = playerData.name;
             if (playerData.grade >= 1 && playerData.grade <= 6) {
                 gradeLabel.textContent = `Terpilih: KELAS ${playerData.grade}`;
@@ -3225,7 +3421,7 @@
                 gameState.started = true;
                 gameState.paused = false;
                 gameState.modalOpen = false;
-                showToast(`Selamat datang ${playerData.name} (Kelas ${playerData.grade})! Ayo jelajahi 6 Zona Belajar!`);
+                showToast(`Selamat datang ${playerData.name} (Kelas ${playerData.grade})! Jelajahi Kota, Hutan, Gunung & 6 Zona!`);
             });
 
             // Keyboard Controls
@@ -3264,22 +3460,20 @@
                 if (e.key === 'Shift') inputKeys.shift = false;
             });
 
-            // Mouse Kamera & Serang Klik Kiri (hanya pada desktop, tidak bentrok dengan touch HP)
+            // Mouse Kamera & Serang Klik Kiri (Kompatibel penuh untuk Desktop & Laptop)
             const canvas = document.getElementById('game-canvas');
             let mouseDownPos = { x: 0, y: 0 };
 
             canvas.addEventListener('mousedown', (e) => {
-                if (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) return;
                 isMouseDragging = true;
                 prevMouse = { x: e.clientX, y: e.clientY };
                 mouseDownPos = { x: e.clientX, y: e.clientY };
             });
 
             window.addEventListener('mouseup', (e) => {
-                if (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) return;
                 if (isMouseDragging && e.button === 0 && e.target === canvas) {
                     const moveDist = Math.hypot(e.clientX - mouseDownPos.x, e.clientY - mouseDownPos.y);
-                    if (moveDist < 6) triggerPlayerAttack();
+                    if (moveDist < 8) triggerPlayerAttack();
                 }
                 isMouseDragging = false;
             });
@@ -3293,10 +3487,10 @@
 
             canvas.addEventListener('wheel', (e) => {
                 if (!gameState.started) return;
-                camDist = Math.max(4.5, Math.min(26, camDist + e.deltaY * 0.012));
+                camDist = Math.max(4.5, Math.min(28, camDist + e.deltaY * 0.012));
             }, { passive: true });
 
-            // Kontrol Kamera Sentuh (1 Jari Putar Kamera 360°, 2 Jari Pinch-to-Zoom untuk Android & iOS)
+            // Kontrol Kamera Sentuh
             let camTouchId = null;
             let prevTouchCam = { x: 0, y: 0 };
             let prevPinchDist = null;
@@ -3320,7 +3514,7 @@
                     const dx = e.touches[0].clientX - e.touches[1].clientX;
                     const dy = e.touches[0].clientY - e.touches[1].clientY;
                     const dist = Math.hypot(dx, dy);
-                    camDist = Math.max(4.5, Math.min(26, camDist - (dist - prevPinchDist) * 0.04));
+                    camDist = Math.max(4.5, Math.min(28, camDist - (dist - prevPinchDist) * 0.04));
                     prevPinchDist = dist;
                     return;
                 }
@@ -3345,7 +3539,7 @@
             canvas.addEventListener('touchend', endCamTouch, { passive: true });
             canvas.addEventListener('touchcancel', endCamTouch, { passive: true });
 
-            // Analog Joystick Virtual 360° (Android & iOS)
+            // Analog Joystick Virtual 360°
             const joyZone = document.getElementById('mobile-joystick-zone');
             const joyKnob = document.getElementById('mobile-joystick-knob');
             const maxJoyRadius = 38;
@@ -3399,13 +3593,13 @@
             joyZone.addEventListener('touchend', resetJoystick);
             joyZone.addEventListener('touchcancel', resetJoystick);
 
-            // Tombol Ganti Senjata (Pensil / Panah / Tembak)
+            // Tombol Ganti Senjata
             document.getElementById('btn-switch-weapon').addEventListener('click', (e) => {
                 e.stopPropagation();
                 cycleNextWeapon();
             });
 
-            // Tombol Lari, Serang & Lompat Sentuh (Multi-touch responsif untuk Android & iOS)
+            // Tombol Lari Sentuh
             const sprintBtn = document.getElementById('btn-action-sprint');
             sprintBtn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
@@ -3421,42 +3615,49 @@
             sprintBtn.addEventListener('touchend', endSprint);
             sprintBtn.addEventListener('touchcancel', endSprint);
 
+            // Tombol Serang (Menggunakan PointerEvent + Click fallback agar 100% responsif di HP, Tablet, & Laptop!)
             const attackBtn = document.getElementById('btn-action-attack');
-            let lastAttackTouchTime = 0;
-            attackBtn.addEventListener('touchstart', (e) => {
+            let lastAttackPointerTime = 0;
+            attackBtn.addEventListener('pointerdown', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                lastAttackTouchTime = Date.now();
+                lastAttackPointerTime = Date.now();
                 attackBtn.classList.add('scale-95', 'bg-rose-600');
                 triggerPlayerAttack();
-            }, { passive: false });
-            const endAttackTouch = (e) => {
+            });
+            const clearAttackStyle = (e) => {
                 if (e) e.stopPropagation();
                 attackBtn.classList.remove('scale-95', 'bg-rose-600');
             };
-            attackBtn.addEventListener('touchend', endAttackTouch);
-            attackBtn.addEventListener('touchcancel', endAttackTouch);
+            attackBtn.addEventListener('pointerup', clearAttackStyle);
+            attackBtn.addEventListener('pointercancel', clearAttackStyle);
+            attackBtn.addEventListener('pointerleave', clearAttackStyle);
             attackBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                if (Date.now() - lastAttackTouchTime < 450) return;
+                if (Date.now() - lastAttackPointerTime < 350) return;
                 triggerPlayerAttack();
             });
 
+            // Tombol Lompat
             const jumpBtn = document.getElementById('btn-action-jump');
-            jumpBtn.addEventListener('touchstart', (e) => {
+            jumpBtn.addEventListener('pointerdown', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 if (playerState.isGrounded) {
                     playerState.vel.y = playerState.jumpForce;
                     playerState.isGrounded = false;
                 }
-            }, { passive: false });
-            jumpBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (playerState.isGrounded) {
-                    playerState.vel.y = playerState.jumpForce;
-                    playerState.isGrounded = false;
-                }
+            });
+
+            // Tombol Teleport Cepat
+            document.getElementById('btn-hud-fast-travel').addEventListener('click', () => {
+                gameState.modalOpen = true;
+                renderTeleportModal();
+                document.getElementById('teleport-modal').classList.remove('hidden');
+            });
+            document.getElementById('btn-close-teleport').addEventListener('click', () => {
+                document.getElementById('teleport-modal').classList.add('hidden');
+                gameState.modalOpen = false;
             });
 
             document.getElementById('btn-interact-action').addEventListener('click', () => {
@@ -3510,7 +3711,7 @@
                 });
             });
 
-            // Mabar 200 Murid & Online Real-Time Modal
+            // Mabar Modal
             document.getElementById('btn-hud-mabar').addEventListener('click', () => {
                 gameState.modalOpen = true;
                 document.getElementById('mabar-setup-modal').classList.remove('hidden');
@@ -3558,11 +3759,11 @@
                 document.getElementById('pause-modal').classList.add('hidden');
             });
             document.getElementById('btn-tp-spawn').addEventListener('click', () => {
-                playerState.pos.set(0, 0, 12);
+                playerState.pos.set(0, 0, 14);
                 playerState.vel.set(0, 0, 0);
                 gameState.paused = false;
                 document.getElementById('pause-modal').classList.add('hidden');
-                showToast('🏠 Kembali ke Alun-Alun Utama!');
+                showToast('🏠 Kembali ke Kota Nusantara Pusat!');
             });
             document.getElementById('btn-change-grade-menu').addEventListener('click', () => {
                 gameState.paused = false;
@@ -3573,7 +3774,7 @@
             });
             document.getElementById('btn-respawn-now').addEventListener('click', () => {
                 playerData.hp = playerData.maxHp;
-                playerState.pos.set(0, 0, 12);
+                playerState.pos.set(0, 0, 14);
                 playerState.vel.set(0, 0, 0);
                 playerState.invulnTimer = 2.0;
                 updateHUD();
@@ -3592,10 +3793,9 @@
             prevFrameTime = time;
 
             if (!gameState.started) {
-                // Kamera orbit panorama dunia saat di Start Screen
-                const angle = time * 0.0003;
-                camera.position.set(Math.sin(angle) * 55, 26, Math.cos(angle) * 55);
-                camera.lookAt(0, 3, -15);
+                const angle = time * 0.00025;
+                camera.position.set(Math.sin(angle) * 85, 38, Math.cos(angle) * 85);
+                camera.lookAt(0, 4, -20);
             } else {
                 if (playerState.invulnTimer > 0) playerState.invulnTimer -= dt;
                 if (playerState.attackCooldown > 0) {

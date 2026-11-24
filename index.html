@@ -237,15 +237,19 @@
 
             <!-- Tombol Lari, Serang & Lompat Sentuh (Ergonomis untuk Ibu Jari HP) -->
             <div class="flex items-end gap-2 sm:gap-2.5 pointer-events-auto">
-                <button id="btn-action-sprint" class="sm:hidden btn-roblox bg-sky-500/90 text-white font-bold w-12 h-12 rounded-2xl border-2 border-white shadow-xl flex flex-col items-center justify-center text-xs leading-none">
+                <button id="btn-switch-weapon" type="button" title="Ganti Senjata [Q]" class="btn-roblox bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold w-14 h-14 sm:w-auto sm:h-auto sm:px-3.5 sm:py-2.5 rounded-2xl border-3 border-white shadow-xl flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 text-xs select-none">
+                    <span id="hud-weapon-icon" class="text-lg sm:text-base">✏️</span>
+                    <span id="hud-weapon-name" class="text-[9px] sm:text-xs font-bold truncate max-w-[52px] sm:max-w-none">Pensil</span>
+                </button>
+                <button id="btn-action-sprint" type="button" class="sm:hidden btn-roblox bg-sky-500/90 text-white font-bold w-12 h-12 rounded-2xl border-2 border-white shadow-xl flex flex-col items-center justify-center text-xs leading-none select-none">
                     <span>⚡</span>
                     <span class="text-[9px] mt-0.5">Lari</span>
                 </button>
-                <button id="btn-action-attack" class="btn-roblox bg-rose-500 hover:bg-rose-400 text-white font-bold w-14 h-14 sm:w-auto sm:h-auto sm:px-4 sm:py-2.5 rounded-2xl border-3 border-white shadow-xl flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 text-sm">
-                    <span class="text-lg sm:text-base">⚔️</span>
-                    <span class="text-[10px] sm:text-sm font-bold">Serang</span>
+                <button id="btn-action-attack" type="button" class="btn-roblox bg-rose-500 hover:bg-rose-400 active:bg-rose-600 text-white font-bold w-16 h-16 sm:w-auto sm:h-auto sm:px-4 sm:py-2.5 rounded-2xl border-3 border-white shadow-xl flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 text-sm select-none">
+                    <span class="text-xl sm:text-base">⚔️</span>
+                    <span id="hud-attack-label" class="text-[10px] sm:text-sm font-bold">Serang</span>
                 </button>
-                <button id="btn-action-jump" class="sm:hidden btn-roblox bg-emerald-500 text-white font-bold w-16 h-16 rounded-2xl border-3 border-white shadow-xl flex flex-col items-center justify-center text-lg leading-none">
+                <button id="btn-action-jump" type="button" class="sm:hidden btn-roblox bg-emerald-500 text-white font-bold w-16 h-16 rounded-2xl border-3 border-white shadow-xl flex flex-col items-center justify-center text-lg leading-none select-none">
                     <span>⬆️</span>
                     <span class="text-[10px] font-bold mt-0.5">Lompat</span>
                 </button>
@@ -299,8 +303,8 @@
             <!-- Instruksi Cara Main -->
             <div class="bg-sky-50 border-2 border-sky-200 rounded-2xl p-3.5 mb-5 text-xs text-slate-700 space-y-1">
                 <div class="font-bold text-sky-900 text-sm mb-1">📖 Cara Bermain:</div>
-                <p>• <b>HP Android / iOS:</b> Gunakan <b>Joystick Kiri</b> untuk jalan, usap layar untuk putar kamera (cubit 2 jari untuk zoom), dan tekan tombol <b>Serang / Lompat</b> di kanan.</p>
-                <p>• <b>Laptop / PC:</b> Gunakan <b>WASD / Panah</b> untuk jalan, <b>Shift</b> lari, <b>Spasi</b> lompat, seret <b>Mouse</b> untuk kamera, <b>[E]</b> bicara Guru, dan <b>Klik Kiri / [F]</b> serang monster.</p>
+                <p>• <b>HP Android / iOS:</b> Gunakan <b>Joystick Kiri</b> untuk jalan, usap layar untuk putar kamera (cubit 2 jari untuk zoom), dan tekan tombol <b>Senjata / Serang / Lompat</b> di kanan.</p>
+                <p>• <b>Laptop / PC:</b> Gunakan <b>WASD / Panah</b> untuk jalan, <b>Shift</b> lari, <b>Spasi</b> lompat, <b>[Q]</b> ganti senjata (Pensil / Panah / Tembak), <b>[E]</b> bicara Guru, dan <b>Klik Kiri / [F]</b> menyerang.</p>
             </div>
 
             <button id="btn-start-play" disabled class="btn-roblox w-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-4 rounded-2xl border-4 border-emerald-700 text-lg md:text-xl">
@@ -720,6 +724,8 @@
             maxHp: 100,
             stamina: 100,
             damage: 25,
+            unlockedWeapons: ['pencil'],
+            equippedWeapon: 'pencil',
             totalAnswered: 0,
             totalCorrect: 0,
             subjectProgress: {
@@ -762,6 +768,12 @@
                             'Koding': { correct: 0, answered: 0 },
                             'AI': { correct: 0, answered: 0 }
                         };
+                    }
+                    if (!Array.isArray(playerData.unlockedWeapons) || playerData.unlockedWeapons.length === 0) {
+                        playerData.unlockedWeapons = ['pencil'];
+                    }
+                    if (!playerData.equippedWeapon) {
+                        playerData.equippedWeapon = 'pencil';
                     }
                 }
             } catch (e) {
@@ -1073,24 +1085,44 @@
         let friendlyNPCs = [];
         let enemies = [];
         let floatingEffects = [];
+        let weaponPickups = [];
+        let activeProjectiles = [];
+        let weaponVisuals = {};
+        let bombTraps = [];
 
-        // InstancedMesh untuk 200 Murid Mabar (60 FPS)
-        let mabarBodyInstanced, mabarHeadInstanced;
-        const dummyMatrix = new THREE.Object3D();
-
-        const playerState = {
-            pos: new THREE.Vector3(0, 0, 12),
-            vel: new THREE.Vector3(0, 0, 0),
-            walkSpeed: 13,
-            sprintSpeed: 21,
-            jumpForce: 15,
-            gravity: 36,
-            isGrounded: false,
-            facingAngle: Math.PI,
-            walkCycle: 0,
-            attackCooldown: 0,
-            attackSwing: 0,
-            invulnTimer: 0
+        const WEAPONS_CONFIG = {
+            pencil: {
+                id: 'pencil',
+                name: 'Pensil',
+                fullName: 'Tongkat Pensil Ilmu',
+                icon: '✏️',
+                actionLabel: 'Serang',
+                cooldown: 0.35,
+                damageMult: 1.0,
+                color: 0xfacc15
+            },
+            bow: {
+                id: 'bow',
+                name: 'Panah',
+                fullName: 'Busur Panah Pengetahuan',
+                icon: '🏹',
+                actionLabel: 'Panah',
+                cooldown: 0.45,
+                damageMult: 1.15,
+                projSpeed: 42,
+                color: 0x22c55e
+            },
+            blaster: {
+                id: 'blaster',
+                name: 'Tembak',
+                fullName: 'Blaster Gelembung Ilmu',
+                icon: '🔫',
+                actionLabel: 'Tembak',
+                cooldown: 0.26,
+                damageMult: 0.95,
+                projSpeed: 54,
+                color: 0x38bdf8
+            }
         };
 
         const inputKeys = { w: false, a: false, s: false, d: false, shift: false };
@@ -1134,6 +1166,8 @@
             buildEnvironmentMap();
             buildSixLearningZones();
             buildPlayerRobloxCharacter();
+            spawnWeaponPickups();
+            spawnBombTraps();
             spawnAllEnemiesAndNPCs();
             initMabarInstancedMeshes();
 
@@ -1351,128 +1385,315 @@
             });
         }
 
-        /**
-         * ============================================================================
-         * 3. PEMAIN: KARAKTER BLOCKY ROBLOX (KEPALA, BADAN, TANGAN, KAKI, PEDANG BUKU)
-         * ============================================================================
-         */
+        const playerState = {
+            pos: new THREE.Vector3(0, 0, 12),
+            vel: new THREE.Vector3(0, 0, 0),
+            facingAngle: 0,
+            isGrounded: true,
+            walkSpeed: 13,
+            sprintSpeed: 22,
+            jumpForce: 15,
+            gravity: 36,
+            walkPhase: 0,
+            attackCooldown: 0,
+            attackSwing: 0,
+            invulnTimer: 0
+        };
+
         function buildPlayerRobloxCharacter() {
             playerGroup = new THREE.Group();
 
-            const shirtMat = new THREE.MeshLambertMaterial({ color: 0x2563eb });
-            const pantsMat = new THREE.MeshLambertMaterial({ color: 0x1e293b });
-            const skinMat = new THREE.MeshLambertMaterial({ color: 0xfde047 });
-
-            // Badan kotak
-            const torso = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.5, 0.7), shirtMat);
-            torso.position.y = 1.65;
+            // Badan (Torso biru khas seragam SD / Roblox)
+            const torso = new THREE.Mesh(
+                new THREE.BoxGeometry(1.4, 1.6, 0.75),
+                new THREE.MeshLambertMaterial({ color: 0x2563eb })
+            );
+            torso.position.y = 1.7;
             torso.castShadow = true;
-            playerGroup.add(torso);
 
-            // Kepala kotak ala Roblox
-            const head = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.0, 1.0), skinMat);
-            head.position.y = 2.95;
+            // Kepala kuning khas Roblox
+            const head = new THREE.Mesh(
+                new THREE.BoxGeometry(1.1, 1.1, 1.1),
+                new THREE.MeshLambertMaterial({ color: 0xfde047 })
+            );
+            head.position.y = 3.05;
             head.castShadow = true;
 
+            // Mata & Senyum
             const eyeMat = new THREE.MeshBasicMaterial({ color: 0x0f172a });
-            const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.2, 0.08), eyeMat);
-            eyeL.position.set(-0.22, 3.05, 0.51);
-            const eyeR = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.2, 0.08), eyeMat);
-            eyeR.position.set(0.22, 3.05, 0.51);
-            const smile = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.08, 0.08), eyeMat);
-            smile.position.set(0, 2.75, 0.51);
-            playerGroup.add(head, eyeL, eyeR, smile);
+            const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.22, 0.08), eyeMat);
+            eyeL.position.set(-0.24, 3.12, 0.56);
+            const eyeR = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.22, 0.08), eyeMat);
+            eyeR.position.set(0.24, 3.12, 0.56);
 
-            // Tangan Kiri & Kanan (dengan Tongkat Pensil Pengetahuan untuk menyerang!)
-            const armGeo = new THREE.BoxGeometry(0.55, 1.45, 0.6);
-            const leftArm = new THREE.Group();
-            leftArm.position.set(-0.95, 2.3, 0);
-            const lMesh = new THREE.Mesh(armGeo, skinMat);
-            lMesh.position.y = -0.65;
-            leftArm.add(lMesh);
+            // Lengan Kiri & Kanan (dengan pivot bahu)
+            const armGeo = new THREE.BoxGeometry(0.55, 1.5, 0.55);
+            const armMat = new THREE.MeshLambertMaterial({ color: 0xfde047 });
 
-            const rightArm = new THREE.Group();
-            rightArm.position.set(0.95, 2.3, 0);
-            const rMesh = new THREE.Mesh(armGeo, skinMat);
-            rMesh.position.y = -0.65;
-            // Senjata Tongkat Pensil Raksasa di tangan kanan
-            const weapon = new THREE.Mesh(
-                new THREE.BoxGeometry(0.24, 0.24, 2.2),
+            const leftArmPivot = new THREE.Group();
+            leftArmPivot.position.set(-1.02, 2.35, 0);
+            const leftArmMesh = new THREE.Mesh(armGeo, armMat);
+            leftArmMesh.position.y = -0.65;
+            leftArmMesh.castShadow = true;
+            leftArmPivot.add(leftArmMesh);
+
+            const rightArmPivot = new THREE.Group();
+            rightArmPivot.position.set(1.02, 2.35, 0);
+            const rightArmMesh = new THREE.Mesh(armGeo, armMat);
+            rightArmMesh.position.y = -0.65;
+            rightArmMesh.castShadow = true;
+            rightArmPivot.add(rightArmMesh);
+
+            // Model 3D Senjata 1: Tongkat Pensil Ilmu
+            const pencilGroup = new THREE.Group();
+            const wand = new THREE.Mesh(
+                new THREE.BoxGeometry(0.22, 0.22, 1.8),
                 new THREE.MeshLambertMaterial({ color: 0xfacc15 })
             );
-            weapon.position.set(0, -1.2, 0.9);
-            const weaponTip = new THREE.Mesh(
-                new THREE.ConeGeometry(0.18, 0.45, 6),
-                new THREE.MeshBasicMaterial({ color: 0xef4444 })
+            wand.position.set(0, -1.25, 0.65);
+            const tip = new THREE.Mesh(
+                new THREE.ConeGeometry(0.18, 0.4, 6),
+                new THREE.MeshLambertMaterial({ color: 0xf43f5e })
             );
-            weaponTip.rotation.x = Math.PI / 2;
-            weaponTip.position.set(0, -1.2, 2.15);
-            rightArm.add(rMesh, weapon, weaponTip);
+            tip.rotation.x = Math.PI / 2;
+            tip.position.set(0, -1.25, 1.7);
+            pencilGroup.add(wand, tip);
+            rightArmPivot.add(pencilGroup);
 
-            // Kaki Kiri & Kanan
-            const legGeo = new THREE.BoxGeometry(0.6, 0.95, 0.65);
-            const leftLeg = new THREE.Group();
-            leftLeg.position.set(-0.34, 0.9, 0);
-            const llMesh = new THREE.Mesh(legGeo, pantsMat);
-            llMesh.position.y = -0.45;
-            leftLeg.add(llMesh);
+            // Model 3D Senjata 2: Busur Panah Pengetahuan
+            const bowGroup = new THREE.Group();
+            const bowArc = new THREE.Mesh(
+                new THREE.TorusGeometry(0.85, 0.09, 8, 16, Math.PI),
+                new THREE.MeshLambertMaterial({ color: 0xd97706 })
+            );
+            bowArc.rotation.y = Math.PI / 2;
+            bowArc.position.set(0, -1.25, 0.55);
+            const bowString = new THREE.Mesh(
+                new THREE.BoxGeometry(0.04, 1.7, 0.04),
+                new THREE.MeshBasicMaterial({ color: 0xffffff })
+            );
+            bowString.position.set(0, -1.25, 0.55);
+            bowGroup.add(bowArc, bowString);
+            bowGroup.visible = false;
+            rightArmPivot.add(bowGroup);
 
-            const rightLeg = new THREE.Group();
-            rightLeg.position.set(0.34, 0.9, 0);
-            const rlMesh = new THREE.Mesh(legGeo, pantsMat);
-            rlMesh.position.y = -0.45;
-            rightLeg.add(rlMesh);
+            // Model 3D Senjata 3: Blaster Gelembung Ilmu
+            const blasterGroup = new THREE.Group();
+            const gunBody = new THREE.Mesh(
+                new THREE.BoxGeometry(0.32, 0.42, 1.15),
+                new THREE.MeshLambertMaterial({ color: 0x0284c7 })
+            );
+            gunBody.position.set(0, -1.22, 0.6);
+            const gunBarrel = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.13, 0.13, 0.45, 10),
+                new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
+            );
+            gunBarrel.rotation.x = Math.PI / 2;
+            gunBarrel.position.set(0, -1.18, 1.25);
+            blasterGroup.add(gunBody, gunBarrel);
+            blasterGroup.visible = false;
+            rightArmPivot.add(blasterGroup);
 
-            playerGroup.add(leftArm, rightArm, leftLeg, rightLeg);
-            playerLimbs = { leftArm, rightArm, leftLeg, rightLeg };
+            weaponVisuals = {
+                pencil: pencilGroup,
+                bow: bowGroup,
+                blaster: blasterGroup
+            };
 
+            // Kaki Kiri & Kanan (Celana merah pramuka/SD)
+            const legGeo = new THREE.BoxGeometry(0.62, 1.0, 0.65);
+            const legMat = new THREE.MeshLambertMaterial({ color: 0xdc2626 });
+
+            const leftLegPivot = new THREE.Group();
+            leftLegPivot.position.set(-0.36, 1.0, 0);
+            const leftLegMesh = new THREE.Mesh(legGeo, legMat);
+            leftLegMesh.position.y = -0.5;
+            leftLegMesh.castShadow = true;
+            leftLegPivot.add(leftLegMesh);
+
+            const rightLegPivot = new THREE.Group();
+            rightLegPivot.position.set(0.36, 1.0, 0);
+            const rightLegMesh = new THREE.Mesh(legGeo, legMat);
+            rightLegMesh.position.y = -0.5;
+            rightLegMesh.castShadow = true;
+            rightLegPivot.add(rightLegMesh);
+
+            playerGroup.add(torso, head, eyeL, eyeR, leftArmPivot, rightArmPivot, leftLegPivot, rightLegPivot);
             playerGroup.position.copy(playerState.pos);
             scene.add(playerGroup);
+
+            playerLimbs = {
+                leftArm: leftArmPivot,
+                rightArm: rightArmPivot,
+                leftLeg: leftLegPivot,
+                rightLeg: rightLegPivot
+            };
+
+            syncEquippedWeaponVisual();
         }
 
-        /**
-         * ============================================================================
-         * 4. NPC & MUSUH: GURU RAMAH + MONSTER PER ZONA DENGAN HEALTH BAR 3D
-         * ============================================================================
-         */
         function spawnAllEnemiesAndNPCs() {
             ZONES_CONFIG.forEach(zone => {
-                // 1. Spawn Guru NPC Ramah di dekat pintu masuk zona
+                // 1. NPC Guru Ramah di depan gedung zona
+                const npcX = zone.x - 4.5;
+                const npcZ = zone.z + 4.5;
                 const npcGroup = new THREE.Group();
-                const npcX = zone.x - 5;
-                const npcZ = zone.z - 2;
                 npcGroup.position.set(npcX, 0, npcZ);
 
-                const body = new THREE.Mesh(
-                    new THREE.BoxGeometry(1.3, 1.6, 0.7),
+                const torso = new THREE.Mesh(
+                    new THREE.BoxGeometry(1.4, 1.6, 0.75),
                     new THREE.MeshLambertMaterial({ color: zone.color })
                 );
-                body.position.y = 1.5;
+                torso.position.y = 1.7;
                 const head = new THREE.Mesh(
-                    new THREE.BoxGeometry(1.0, 1.0, 1.0),
-                    new THREE.MeshLambertMaterial({ color: 0xfde047 })
+                    new THREE.BoxGeometry(1.1, 1.1, 1.1),
+                    new THREE.MeshLambertMaterial({ color: 0xfef3c7 })
                 );
-                head.position.y = 2.85;
-                const tag = createCanvasLabel(`💬 ${zone.npcName}`, '#0f172a', '#facc15', 7, 1.4);
-                tag.position.set(0, 4.3, 0);
-                npcGroup.add(body, head, tag);
+                head.position.y = 3.05;
+                const legs = new THREE.Mesh(
+                    new THREE.BoxGeometry(1.3, 1.0, 0.7),
+                    new THREE.MeshLambertMaterial({ color: 0x1e293b })
+                );
+                legs.position.y = 0.5;
+
+                const label = createCanvasLabel(`${zone.icon} ${zone.npcName}`, '#0f172a', '#fde047', 8.5, 1.6);
+                label.position.set(0, 4.5, 0);
+
+                npcGroup.add(torso, head, legs, label);
                 scene.add(npcGroup);
 
                 friendlyNPCs.push({
                     zoneId: zone.id,
-                    name: zone.npcName,
                     icon: zone.icon,
+                    name: zone.npcName,
                     materials: zone.materials,
                     x: npcX,
                     z: npcZ,
-                    mesh: npcGroup
+                    mesh: npcGroup,
+                    labelMesh: label
                 });
 
-                // 2. Spawn 2 Musuh per Zona dengan Health Bar di atas kepala
-                for (let m = 0; m < 2; m++) {
-                    const ex = zone.x + (m === 0 ? 6 : -7);
-                    const ez = zone.z + (m === 0 ? 5 : 8);
-                    spawnSingleEnemy(zone, ex, ez);
+                // 2. Dua Monster Edukasi per Zona
+                spawnSingleEnemy(zone, zone.x + 8, zone.z + 6);
+                spawnSingleEnemy(zone, zone.x - 9, zone.z + 10);
+            });
+        }
+
+        function spawnBombTraps() {
+            // Penempatan jebakan bom di jalur strategis menuju zona belajar (bisa dilompati!)
+            const bombCoords = [
+                { x: -32, z: -30 },
+                { x: 32, z: -30 },
+                { x: -45, z: 10 },
+                { x: 45, z: 10 },
+                { x: -30, z: 42 },
+                { x: 30, z: 42 },
+                { x: 0, z: -48 },
+                { x: 0, z: 52 }
+            ];
+
+            bombCoords.forEach(pos => {
+                const group = new THREE.Group();
+                group.position.set(pos.x, 0, pos.z);
+
+                // Lingkaran zona bahaya merah di tanah
+                const dangerRing = new THREE.Mesh(
+                    new THREE.RingGeometry(1.1, 1.65, 24),
+                    new THREE.MeshBasicMaterial({ color: 0xef4444, side: THREE.DoubleSide })
+                );
+                dangerRing.rotation.x = -Math.PI / 2;
+                dangerRing.position.y = 0.12;
+
+                // Badan Bom Bulat Hitam
+                const bombSphere = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.85, 14, 14),
+                    new THREE.MeshLambertMaterial({ color: 0x1e293b })
+                );
+                bombSphere.position.y = 0.85;
+                bombSphere.castShadow = true;
+
+                // Sumbu & Lampu Merah Berkedip di atas bom
+                const fuse = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.12, 0.12, 0.45, 8),
+                    new THREE.MeshBasicMaterial({ color: 0xfef08a })
+                );
+                fuse.position.y = 1.8;
+
+                const blinkLed = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.24, 10, 10),
+                    new THREE.MeshBasicMaterial({ color: 0xef4444 })
+                );
+                blinkLed.position.y = 2.08;
+
+                const warnTag = createCanvasLabel('💣 AWAS BOM!', '#991b1b', '#fef08a', 4.4, 0.95);
+                warnTag.position.set(0, 3.0, 0);
+
+                group.add(dangerRing, bombSphere, fuse, blinkLed, warnTag);
+                scene.add(group);
+
+                bombTraps.push({
+                    x: pos.x,
+                    z: pos.z,
+                    group,
+                    blinkLed,
+                    warnTag,
+                    cooldown: 0
+                });
+            });
+        }
+
+        function triggerBombExplosion(bomb) {
+            bomb.cooldown = 3.5;
+
+            // Efek bola ledakan 3D membesar
+            const boomGeo = new THREE.SphereGeometry(1.2, 16, 16);
+            const boomMat = new THREE.MeshBasicMaterial({
+                color: 0xf97316,
+                transparent: true,
+                opacity: 0.9
+            });
+            const boomMesh = new THREE.Mesh(boomGeo, boomMat);
+            boomMesh.position.set(bomb.x, 1.2, bomb.z);
+            scene.add(boomMesh);
+
+            let scale = 1;
+            const expandInterval = setInterval(() => {
+                scale += 0.65;
+                boomMesh.scale.set(scale, scale, scale);
+                boomMat.opacity = Math.max(0, boomMat.opacity - 0.16);
+                if (boomMat.opacity <= 0) {
+                    clearInterval(expandInterval);
+                    scene.remove(boomMesh);
+                    boomGeo.dispose();
+                    boomMat.dispose();
+                }
+            }, 30);
+
+            // Flash merah di layar & eliminasi langsung karakter siswa
+            const flash = document.getElementById('damage-flash');
+            flash.style.opacity = '1';
+            setTimeout(() => { flash.style.opacity = '0'; }, 350);
+
+            playerData.hp = 0;
+            updateHUD();
+            document.getElementById('gameover-modal').querySelector('h2').textContent = '💥 Terkena Jebakan Bom!';
+            gameState.modalOpen = true;
+            document.getElementById('gameover-modal').classList.remove('hidden');
+        }
+
+        function updateBombTraps(dt, time) {
+            const pulse = Math.sin(time * 0.012) > 0;
+            bombTraps.forEach(bomb => {
+                if (bomb.cooldown > 0) bomb.cooldown -= dt;
+                bomb.blinkLed.material.color.setHex(pulse ? 0xff0000 : 0xfacc15);
+                bomb.warnTag.lookAt(camera.position);
+
+                if (gameState.paused || gameState.modalOpen || bomb.cooldown > 0) return;
+
+                // Cek jarak mendatar & ketinggian lompatan (jika siswa melompat tinggi > 1.75 unit, selamat!)
+                const dist = Math.hypot(playerState.pos.x - bomb.x, playerState.pos.z - bomb.z);
+                if (dist < 1.55 && playerState.pos.y < 1.75) {
+                    triggerBombExplosion(bomb);
                 }
             });
         }
@@ -1546,10 +1767,28 @@
             if (!gameState.started || gameState.paused || gameState.modalOpen) return;
             if (playerState.attackCooldown > 0) return;
 
-            playerState.attackCooldown = 0.42;
+            playerState.attackCooldown = 0.35;
             playerState.attackSwing = 1.0;
 
-            // Cek semua musuh hidup dalam jangkauan serangan (radius 4.6 unit di depan/sekitar pemain)
+            // Efek cincin tebasan 3D singkat di sekitar pemain agar serangan terlihat jelas
+            const slashGeo = new THREE.RingGeometry(1.2, 4.4, 24);
+            const slashMat = new THREE.MeshBasicMaterial({
+                color: 0xfacc15,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.75
+            });
+            const slashMesh = new THREE.Mesh(slashGeo, slashMat);
+            slashMesh.rotation.x = -Math.PI / 2;
+            slashMesh.position.set(playerState.pos.x, playerState.pos.y + 0.35, playerState.pos.z);
+            scene.add(slashMesh);
+            setTimeout(() => {
+                scene.remove(slashMesh);
+                slashGeo.dispose();
+                slashMat.dispose();
+            }, 160);
+
+            // Cek semua musuh hidup dalam jangkauan serangan (radius 5.2 unit di sekitar pemain)
             let hitCount = 0;
             enemies.forEach(enemy => {
                 if (!enemy.alive) return;
@@ -1557,7 +1796,7 @@
                 const dz = enemy.mesh.position.z - playerState.pos.z;
                 const dist = Math.hypot(dx, dz);
 
-                if (dist <= 4.6) {
+                if (dist <= 5.2) {
                     hitCount++;
                     enemy.hp -= playerData.damage;
                     enemy.hitFlashTimer = 0.18;
@@ -2142,9 +2381,13 @@
                 rp.grade = pData.grade;
                 rp.xp = pData.xp;
                 rp.rotY = pData.rotY;
-                rp.targetPos.set(pData.x, pData.y, pData.z);
+                rp.targetPos.set(pData.x || 0, pData.y || 0, pData.z || 12);
             }
         }
+
+        let mabarBodyInstanced = null;
+        let mabarHeadInstanced = null;
+        const dummyMatrix = new THREE.Object3D();
 
         function initMabarInstancedMeshes() {
             const count = 199;
@@ -2584,36 +2827,39 @@
             playerGroup.position.copy(playerState.pos);
             playerGroup.rotation.y = playerState.facingAngle;
 
-            // Animasi kaki & tangan blocky
-            if (!playerState.isGrounded) {
-                playerLimbs.leftArm.rotation.x = Math.PI * 0.8;
-                playerLimbs.rightArm.rotation.x = Math.PI * 0.8;
-                playerLimbs.leftLeg.rotation.x = 0.35;
-                playerLimbs.rightLeg.rotation.x = -0.35;
-            } else if (isMoving) {
-                playerState.walkCycle += dt * (wantsSprint ? 16 : 11);
-                const swing = Math.sin(playerState.walkCycle) * 0.65;
-                playerLimbs.leftArm.rotation.x = swing;
-                playerLimbs.rightArm.rotation.x = -swing;
-                playerLimbs.leftLeg.rotation.x = -swing;
-                playerLimbs.rightLeg.rotation.x = swing;
+            // Animasi ayunan tangan & kaki
+            if (isMoving && playerState.isGrounded) {
+                playerState.walkPhase += dt * (wantsSprint ? 15 : 10);
+                const swing = Math.sin(playerState.walkPhase) * 0.75;
+                playerLimbs.leftLeg.rotation.x = swing;
+                playerLimbs.rightLeg.rotation.x = -swing;
+                playerLimbs.leftArm.rotation.x = -swing * 0.85;
+                if (playerState.attackSwing <= 0) {
+                    playerLimbs.rightArm.rotation.x = swing * 0.85;
+                }
             } else {
-                playerLimbs.leftArm.rotation.x *= 0.8;
-                playerLimbs.rightArm.rotation.x *= 0.8;
                 playerLimbs.leftLeg.rotation.x *= 0.8;
                 playerLimbs.rightLeg.rotation.x *= 0.8;
+                playerLimbs.leftArm.rotation.x *= 0.8;
+                if (playerState.attackSwing <= 0) {
+                    playerLimbs.rightArm.rotation.x *= 0.8;
+                }
             }
 
             // Animasi ayunan senjata saat menyerang
             if (playerState.attackSwing > 0) {
                 playerState.attackSwing = Math.max(0, playerState.attackSwing - dt * 4.5);
-                playerLimbs.rightArm.rotation.x = -Math.sin(playerState.attackSwing * Math.PI) * 2.1;
+                if (playerData.equippedWeapon === 'bow' || playerData.equippedWeapon === 'blaster') {
+                    playerLimbs.rightArm.rotation.x = -Math.PI * 0.48;
+                } else {
+                    playerLimbs.rightArm.rotation.x = -Math.sin(playerState.attackSwing * Math.PI) * 2.1;
+                }
             }
 
-            // Cek zona terdekat & kedekatan dengan Guru NPC
+            // Deteksi zona terdekat & NPC terdekat
             let currentZoneText = '🗺️ Alun-Alun Nusantara';
             for (const z of ZONES_CONFIG) {
-                if (Math.hypot(playerState.pos.x - z.x, playerState.pos.z - z.z) < 22) {
+                if (Math.hypot(playerState.pos.x - z.x, playerState.pos.z - z.z) < 26) {
                     currentZoneText = `${z.icon} ${z.title}`;
                     gameState.activeZoneId = z.id;
                     break;
@@ -2623,6 +2869,7 @@
 
             nearbyNPC = null;
             for (const npc of friendlyNPCs) {
+                npc.labelMesh.lookAt(camera.position);
                 if (Math.hypot(playerState.pos.x - npc.x, playerState.pos.z - npc.z) < 4.5) {
                     nearbyNPC = npc;
                     break;
@@ -2648,6 +2895,269 @@
             );
             camera.position.lerp(targetCamPos, 0.18);
             camera.lookAt(playerState.pos.x, playerState.pos.y + 2.1, playerState.pos.z);
+        }
+
+        function syncEquippedWeaponVisual() {
+            const current = playerData.equippedWeapon || 'pencil';
+            Object.keys(weaponVisuals).forEach(key => {
+                if (weaponVisuals[key]) {
+                    weaponVisuals[key].visible = (key === current);
+                }
+            });
+            const cfg = WEAPONS_CONFIG[current] || WEAPONS_CONFIG.pencil;
+            const iconEl = document.getElementById('hud-weapon-icon');
+            const nameEl = document.getElementById('hud-weapon-name');
+            const atkEl = document.getElementById('hud-attack-label');
+            if (iconEl) iconEl.textContent = cfg.icon;
+            if (nameEl) nameEl.textContent = cfg.name;
+            if (atkEl) atkEl.textContent = cfg.actionLabel;
+        }
+
+        function equipWeapon(weaponId) {
+            if (!playerData.unlockedWeapons.includes(weaponId)) return;
+            playerData.equippedWeapon = weaponId;
+            syncEquippedWeaponVisual();
+            savePlayerData();
+            const cfg = WEAPONS_CONFIG[weaponId];
+            showToast(`${cfg.icon} Memakai ${cfg.fullName}!`);
+        }
+
+        function cycleNextWeapon() {
+            const unlocked = playerData.unlockedWeapons;
+            if (unlocked.length <= 1) {
+                showToast('🔍 Jelajahi peta untuk menemukan Busur Panah 🏹 & Blaster Tembak 🔫!');
+                return;
+            }
+            const idx = unlocked.indexOf(playerData.equippedWeapon);
+            const nextId = unlocked[(idx + 1) % unlocked.length];
+            equipWeapon(nextId);
+        }
+
+        function spawnWeaponPickups() {
+            // Lokasi penemuan senjata di peta agar siswa bersemangat bereksplorasi
+            const pickupDefs = [
+                { id: 'bow', x: 34, z: -32, label: '🏹 BUSUR PANAH (Ambil!)' },
+                { id: 'bow', x: -38, z: -28, label: '🏹 BUSUR PANAH (Ambil!)' },
+                { id: 'blaster', x: -32, z: 46, label: '🔫 BLASTER TEMBAK (Ambil!)' },
+                { id: 'blaster', x: 35, z: 46, label: '🔫 BLASTER TEMBAK (Ambil!)' }
+            ];
+
+            pickupDefs.forEach(def => {
+                const cfg = WEAPONS_CONFIG[def.id];
+                const group = new THREE.Group();
+                group.position.set(def.x, 0, def.z);
+
+                // Pedestal cahaya di tanah
+                const pad = new THREE.Mesh(
+                    new THREE.CylinderGeometry(2.2, 2.5, 0.25, 20),
+                    new THREE.MeshBasicMaterial({ color: cfg.color, transparent: true, opacity: 0.75 })
+                );
+                pad.position.y = 0.13;
+
+                // Model senjata melayang
+                const itemMesh = new THREE.Group();
+                itemMesh.position.y = 1.9;
+                if (def.id === 'bow') {
+                    const arc = new THREE.Mesh(
+                        new THREE.TorusGeometry(1.1, 0.12, 8, 16, Math.PI),
+                        new THREE.MeshLambertMaterial({ color: 0xd97706 })
+                    );
+                    const str = new THREE.Mesh(
+                        new THREE.BoxGeometry(2.2, 0.05, 0.05),
+                        new THREE.MeshBasicMaterial({ color: 0xffffff })
+                    );
+                    itemMesh.add(arc, str);
+                } else {
+                    const gunBody = new THREE.Mesh(
+                        new THREE.BoxGeometry(1.5, 0.55, 0.45),
+                        new THREE.MeshLambertMaterial({ color: 0x0284c7 })
+                    );
+                    const gunTip = new THREE.Mesh(
+                        new THREE.CylinderGeometry(0.18, 0.18, 0.55, 10),
+                        new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
+                    );
+                    gunTip.rotation.z = Math.PI / 2;
+                    gunTip.position.x = 0.9;
+                    itemMesh.add(gunBody, gunTip);
+                }
+
+                const sign = createCanvasLabel(def.label, '#0f172a', '#facc15', 6.8, 1.35);
+                sign.position.set(0, 3.6, 0);
+
+                group.add(pad, itemMesh, sign);
+                scene.add(group);
+
+                weaponPickups.push({
+                    weaponId: def.id,
+                    x: def.x,
+                    z: def.z,
+                    group,
+                    itemMesh,
+                    signMesh: sign
+                });
+            });
+        }
+
+        function updateWeaponPickupsAndProjectiles(dt, time) {
+            // 1. Animasi melayang & deteksi pengambilan senjata oleh siswa
+            weaponPickups.forEach(wp => {
+                wp.itemMesh.rotation.y = time * 0.0025;
+                wp.itemMesh.position.y = 1.85 + Math.sin(time * 0.004) * 0.25;
+                wp.signMesh.lookAt(camera.position);
+
+                const dist = Math.hypot(playerState.pos.x - wp.x, playerState.pos.z - wp.z);
+                if (dist < 2.6) {
+                    if (!playerData.unlockedWeapons.includes(wp.weaponId)) {
+                        playerData.unlockedWeapons.push(wp.weaponId);
+                        equipWeapon(wp.weaponId);
+                        const cfg = WEAPONS_CONFIG[wp.weaponId];
+                        showToast(`🎉 DITEMUKAN! ${cfg.icon} ${cfg.fullName}! Tekan [Q] / tombol Senjata untuk ganti.`);
+                    } else if (playerData.equippedWeapon !== wp.weaponId) {
+                        equipWeapon(wp.weaponId);
+                    }
+                }
+            });
+
+            // 2. Update peluru tembak & anak panah jarak jauh
+            for (let i = activeProjectiles.length - 1; i >= 0; i--) {
+                const proj = activeProjectiles[i];
+                proj.life -= dt;
+                proj.mesh.position.addScaledVector(proj.vel, dt);
+
+                let hit = false;
+                for (const enemy of enemies) {
+                    if (!enemy.alive) continue;
+                    const dx = enemy.mesh.position.x - proj.mesh.position.x;
+                    const dz = enemy.mesh.position.z - proj.mesh.position.z;
+                    if (Math.hypot(dx, dz) < 2.0) {
+                        hit = true;
+                        applyDamageToEnemy(enemy, proj.damage, proj.vel.x, proj.vel.z);
+                        break;
+                    }
+                }
+
+                if (hit || proj.life <= 0) {
+                    scene.remove(proj.mesh);
+                    activeProjectiles.splice(i, 1);
+                }
+            }
+        }
+
+        function triggerPlayerAttack() {
+            if (!gameState.started || gameState.paused || gameState.modalOpen) return;
+            if (playerState.attackCooldown > 0) return;
+
+            const currentWeaponId = playerData.equippedWeapon || 'pencil';
+            const weaponCfg = WEAPONS_CONFIG[currentWeaponId] || WEAPONS_CONFIG.pencil;
+            const totalDamage = Math.round(playerData.damage * weaponCfg.damageMult);
+
+            playerState.attackCooldown = weaponCfg.cooldown;
+            playerState.attackSwing = 1.0;
+
+            // Mode Senjata Jarak Jauh: Busur Panah atau Blaster Tembak
+            if (currentWeaponId === 'bow' || currentWeaponId === 'blaster') {
+                const dirX = Math.sin(playerState.facingAngle);
+                const dirZ = Math.cos(playerState.facingAngle);
+
+                const projGroup = new THREE.Group();
+                projGroup.position.set(
+                    playerState.pos.x + dirX * 1.4,
+                    playerState.pos.y + 1.65,
+                    playerState.pos.z + dirZ * 1.4
+                );
+                projGroup.rotation.y = playerState.facingAngle;
+
+                if (currentWeaponId === 'bow') {
+                    // Anak Panah Pengetahuan bercahaya hijau-emas
+                    const shaft = new THREE.Mesh(
+                        new THREE.BoxGeometry(0.14, 0.14, 1.8),
+                        new THREE.MeshBasicMaterial({ color: 0xfacc15 })
+                    );
+                    const head = new THREE.Mesh(
+                        new THREE.ConeGeometry(0.24, 0.5, 6),
+                        new THREE.MeshBasicMaterial({ color: 0x22c55e })
+                    );
+                    head.rotation.x = Math.PI / 2;
+                    head.position.z = 1.0;
+                    projGroup.add(shaft, head);
+                } else {
+                    // Peluru Energi Blaster Gelembung Ilmu
+                    const orb = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.36, 10, 10),
+                        new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
+                    );
+                    const core = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.2, 8, 8),
+                        new THREE.MeshBasicMaterial({ color: 0xffffff })
+                    );
+                    projGroup.add(orb, core);
+                }
+
+                scene.add(projGroup);
+                activeProjectiles.push({
+                    mesh: projGroup,
+                    vel: new THREE.Vector3(dirX * weaponCfg.projSpeed, 0, dirZ * weaponCfg.projSpeed),
+                    damage: totalDamage,
+                    life: 1.4
+                });
+                return;
+            }
+
+            // Mode Senjata Jarak Dekat: Tongkat Pensil
+            const slashGeo = new THREE.RingGeometry(1.2, 4.4, 24);
+            const slashMat = new THREE.MeshBasicMaterial({
+                color: 0xfacc15,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.75
+            });
+            const slashMesh = new THREE.Mesh(slashGeo, slashMat);
+            slashMesh.rotation.x = -Math.PI / 2;
+            slashMesh.position.set(playerState.pos.x, playerState.pos.y + 0.35, playerState.pos.z);
+            scene.add(slashMesh);
+            setTimeout(() => {
+                scene.remove(slashMesh);
+                slashGeo.dispose();
+                slashMat.dispose();
+            }, 160);
+
+            let hitCount = 0;
+            enemies.forEach(enemy => {
+                if (!enemy.alive) return;
+                const dx = enemy.mesh.position.x - playerState.pos.x;
+                const dz = enemy.mesh.position.z - playerState.pos.z;
+                const dist = Math.hypot(dx, dz);
+
+                if (dist <= 5.2) {
+                    hitCount++;
+                    applyDamageToEnemy(enemy, totalDamage, dx, dz);
+                }
+            });
+
+            if (hitCount > 0) {
+                showToast(`💥 Serangan mengenai monster! (-${totalDamage} HP)`);
+            }
+        }
+
+        function applyDamageToEnemy(enemy, dmgAmount, dirX, dirZ) {
+            enemy.hp -= dmgAmount;
+            enemy.hitFlashTimer = 0.18;
+            enemy.bodyMesh.material.color.setHex(0xffffff);
+
+            const dist = Math.hypot(dirX, dirZ) || 1;
+            enemy.knockbackVel.set((dirX / dist) * 14, 0, (dirZ / dist) * 14);
+
+            const ratio = Math.max(0, enemy.hp / enemy.maxHp);
+            enemy.hpFillMesh.scale.x = Math.max(0.001, ratio);
+            enemy.hpFillMesh.position.x = -(1 - ratio) * 1.04;
+
+            if (enemy.hp <= 0) {
+                enemy.alive = false;
+                enemy.mesh.visible = false;
+                enemy.respawnTimer = 8.0;
+                showToast(`⚔️ ${enemy.name} dikalahkan! Jawab kuis ${enemy.zoneId}!`);
+                setTimeout(() => openQuizModal(enemy.zoneId), 450);
+            }
         }
 
         function openFriendlyNPCDialog(npc) {
@@ -2741,6 +3251,7 @@
                     }
                 }
                 if (k === 'f') triggerPlayerAttack();
+                if (k === 'q') cycleNextWeapon();
                 if (k === 'e' && nearbyNPC) openFriendlyNPCDialog(nearbyNPC);
             });
 
@@ -2753,18 +3264,20 @@
                 if (e.key === 'Shift') inputKeys.shift = false;
             });
 
-            // Mouse Kamera & Serang Klik Kiri
+            // Mouse Kamera & Serang Klik Kiri (hanya pada desktop, tidak bentrok dengan touch HP)
             const canvas = document.getElementById('game-canvas');
             let mouseDownPos = { x: 0, y: 0 };
 
             canvas.addEventListener('mousedown', (e) => {
+                if (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) return;
                 isMouseDragging = true;
                 prevMouse = { x: e.clientX, y: e.clientY };
                 mouseDownPos = { x: e.clientX, y: e.clientY };
             });
 
             window.addEventListener('mouseup', (e) => {
-                if (isMouseDragging && e.button === 0) {
+                if (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) return;
+                if (isMouseDragging && e.button === 0 && e.target === canvas) {
                     const moveDist = Math.hypot(e.clientX - mouseDownPos.x, e.clientY - mouseDownPos.y);
                     if (moveDist < 6) triggerPlayerAttack();
                 }
@@ -2875,8 +3388,8 @@
             const resetJoystick = (e) => {
                 for (let i = 0; i < e.changedTouches.length; i++) {
                     if (e.changedTouches[i].identifier === touchAnalog.touchId) {
-                        touchAnalog.touchId = null;
                         touchAnalog.active = false;
+                        touchAnalog.touchId = null;
                         touchAnalog.x = 0;
                         touchAnalog.y = 0;
                         joyKnob.style.transform = 'translate(0px, 0px)';
@@ -2886,29 +3399,60 @@
             joyZone.addEventListener('touchend', resetJoystick);
             joyZone.addEventListener('touchcancel', resetJoystick);
 
-            // Tombol Lari, Serang & Lompat Sentuh
+            // Tombol Ganti Senjata (Pensil / Panah / Tembak)
+            document.getElementById('btn-switch-weapon').addEventListener('click', (e) => {
+                e.stopPropagation();
+                cycleNextWeapon();
+            });
+
+            // Tombol Lari, Serang & Lompat Sentuh (Multi-touch responsif untuk Android & iOS)
             const sprintBtn = document.getElementById('btn-action-sprint');
             sprintBtn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 inputKeys.shift = true;
                 sprintBtn.classList.add('bg-amber-400', 'text-amber-950');
             }, { passive: false });
-            const endSprint = () => {
+            const endSprint = (e) => {
+                if (e) e.stopPropagation();
                 inputKeys.shift = false;
                 sprintBtn.classList.remove('bg-amber-400', 'text-amber-950');
             };
             sprintBtn.addEventListener('touchend', endSprint);
             sprintBtn.addEventListener('touchcancel', endSprint);
 
-            document.getElementById('btn-action-attack').addEventListener('click', triggerPlayerAttack);
-            document.getElementById('btn-action-jump').addEventListener('touchstart', (e) => {
+            const attackBtn = document.getElementById('btn-action-attack');
+            let lastAttackTouchTime = 0;
+            attackBtn.addEventListener('touchstart', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
+                lastAttackTouchTime = Date.now();
+                attackBtn.classList.add('scale-95', 'bg-rose-600');
+                triggerPlayerAttack();
+            }, { passive: false });
+            const endAttackTouch = (e) => {
+                if (e) e.stopPropagation();
+                attackBtn.classList.remove('scale-95', 'bg-rose-600');
+            };
+            attackBtn.addEventListener('touchend', endAttackTouch);
+            attackBtn.addEventListener('touchcancel', endAttackTouch);
+            attackBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (Date.now() - lastAttackTouchTime < 450) return;
+                triggerPlayerAttack();
+            });
+
+            const jumpBtn = document.getElementById('btn-action-jump');
+            jumpBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 if (playerState.isGrounded) {
                     playerState.vel.y = playerState.jumpForce;
                     playerState.isGrounded = false;
                 }
             }, { passive: false });
-            document.getElementById('btn-action-jump').addEventListener('click', () => {
+            jumpBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 if (playerState.isGrounded) {
                     playerState.vel.y = playerState.jumpForce;
                     playerState.isGrounded = false;
@@ -3053,7 +3597,16 @@
                 camera.position.set(Math.sin(angle) * 55, 26, Math.cos(angle) * 55);
                 camera.lookAt(0, 3, -15);
             } else {
-                updatePlayerMovement(dt);
+                if (playerState.invulnTimer > 0) playerState.invulnTimer -= dt;
+                if (playerState.attackCooldown > 0) {
+                    playerState.attackCooldown = Math.max(0, playerState.attackCooldown - dt);
+                }
+
+                if (!gameState.paused && !gameState.modalOpen) {
+                    updatePlayerMovement(dt);
+                }
+                updateBombTraps(dt, time);
+                updateWeaponPickupsAndProjectiles(dt, time);
                 updateEnemiesAI(dt, time);
                 updateMabarSimulation(dt, time);
 

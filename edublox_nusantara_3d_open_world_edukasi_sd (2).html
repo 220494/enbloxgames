@@ -1,0 +1,2939 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EduBlox Nusantara 3D - Dunia Belajar Roblox SD</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js CDN (r160) -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <!-- PeerJS CDN untuk Koneksi Mabar Online Real-Time Antar Perangkat (Tanpa Server Backend) -->
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+    <!-- Google Fonts: Fredoka -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            margin: 0;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            background-color: #38bdf8;
+        }
+        #game-canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            touch-action: none;
+        }
+        .btn-roblox {
+            transition: transform 0.08s ease, box-shadow 0.08s ease;
+            box-shadow: 0 5px 0 rgba(15, 23, 42, 0.28);
+        }
+        .btn-roblox:active:not(:disabled) {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 rgba(15, 23, 42, 0.28);
+        }
+        .btn-roblox:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 4px solid #ffffff;
+        }
+        .glass-hud {
+            background: rgba(15, 23, 42, 0.82);
+            backdrop-filter: blur(8px);
+            border: 2px solid rgba(255, 255, 255, 0.25);
+        }
+        #damage-flash {
+            pointer-events: none;
+            transition: opacity 0.15s ease-out;
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 999px; }
+    </style>
+</head>
+<body class="relative w-screen h-screen overflow-hidden">
+
+    <!-- Canvas 3D Utama -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- Efek Flash Merah Saat Terkena Serangan -->
+    <div id="damage-flash" class="fixed inset-0 bg-red-600/45 opacity-0 z-30"></div>
+
+    <!-- ======================================================================== -->
+    <!-- HUD UTAMA (TAMPIL SAAT BERMAIN)                                          -->
+    <!-- ======================================================================== -->
+    <div id="hud-layer" class="hidden fixed inset-0 pointer-events-none z-20">
+        <!-- BAR KIRI ATAS: Profil, Badge Kelas, HP, Stamina, XP, Level, Koin -->
+        <div class="fixed top-3 left-3 flex flex-col gap-2 pointer-events-auto max-w-[330px] sm:max-w-md">
+            <div class="glass-hud rounded-2xl p-3 text-white shadow-xl">
+                <div class="flex items-center justify-between gap-2 mb-2">
+                    <div class="flex items-center gap-2">
+                        <div class="w-10 h-10 rounded-xl bg-amber-400 text-amber-950 font-bold flex items-center justify-center text-xl border-2 border-white">
+                            🧱
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-1.5">
+                                <span id="hud-name" class="font-bold text-sm md:text-base">Budi</span>
+                                <span id="hud-grade-badge" class="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg border border-blue-300">Kelas 4</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-xs text-amber-300 font-bold">
+                                <span id="hud-level">Lv. 1</span>
+                                <span>•</span>
+                                <span id="hud-coins">🪙 0 Koin</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Tombol Aksi Cepat -->
+                    <div class="flex items-center gap-1">
+                        <button id="btn-hud-rapor" title="Rapor Belajar" class="btn-roblox bg-emerald-500 hover:bg-emerald-400 text-white font-bold px-2.5 py-1.5 rounded-xl text-xs border border-emerald-200">
+                            📊 Rapor
+                        </button>
+                        <button id="btn-hud-klasmen" title="Klasmen" class="btn-roblox bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold px-2.5 py-1.5 rounded-xl text-xs border border-amber-200">
+                            🏆 Klasmen
+                        </button>
+                        <button id="btn-hud-mabar" title="Mabar 200 Murid" class="btn-roblox bg-purple-600 hover:bg-purple-500 text-white font-bold px-2.5 py-1.5 rounded-xl text-xs border border-purple-300">
+                            🔥 Mabar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- HP Bar -->
+                <div class="mb-1.5">
+                    <div class="flex justify-between text-[11px] font-bold mb-0.5">
+                        <span class="text-rose-300">❤️ HP</span>
+                        <span id="hud-hp-text">100 / 100</span>
+                    </div>
+                    <div class="w-full h-3 bg-slate-800 rounded-full overflow-hidden border border-white/20">
+                        <div id="hud-hp-bar" class="h-full bg-gradient-to-r from-rose-500 to-red-400 transition-all duration-150" style="width: 100%"></div>
+                    </div>
+                </div>
+
+                <!-- Stamina & XP Bar Sejajar -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <div class="flex justify-between text-[10px] font-bold mb-0.5">
+                            <span class="text-sky-300">⚡ Stamina</span>
+                            <span id="hud-stamina-text">100%</span>
+                        </div>
+                        <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                            <div id="hud-stamina-bar" class="h-full bg-sky-400 transition-all duration-75" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-[10px] font-bold mb-0.5">
+                            <span class="text-amber-300">✨ XP</span>
+                            <span id="hud-xp-text">0 / 100</span>
+                        </div>
+                        <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                            <div id="hud-xp-bar" class="h-full bg-amber-400 transition-all duration-200" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL QUEST & LOKASI ZONA -->
+            <div class="glass-hud rounded-2xl p-2.5 text-white text-xs shadow-lg">
+                <div class="flex items-center justify-between mb-1">
+                    <span id="hud-zone-label" class="font-bold text-cyan-300">🗺️ Alun-Alun Nusantara</span>
+                    <button id="btn-hud-pause" class="bg-white/15 hover:bg-white/25 px-2 py-0.5 rounded text-[11px] font-bold">⏸️ Menu (ESC)</button>
+                </div>
+                <p id="hud-quest-text" class="text-slate-200 leading-snug">
+                    Jelajahi 6 Zona Belajar, kalahkan monster pengganggu, atau bicara dengan Guru untuk menjawab kuis!
+                </p>
+            </div>
+
+            <!-- PANEL PROGRESS 6 MATA PELAJARAN -->
+            <div class="hidden sm:block glass-hud rounded-2xl p-2.5 text-white text-xs shadow-lg">
+                <div class="font-bold text-amber-300 mb-1.5 flex justify-between items-center">
+                    <span>📚 Progress Belajar (<span id="hud-progress-grade">Kelas 4</span>)</span>
+                    <span id="hud-total-correct" class="text-[11px] bg-white/15 px-1.5 py-0.5 rounded">0/30 Benar</span>
+                </div>
+                <div id="hud-subject-progress" class="grid grid-cols-2 gap-1.5 text-[11px]">
+                    <!-- Diisi dinamis -->
+                </div>
+            </div>
+        </div>
+
+        <!-- KANAN ATAS: MINIMAP 2D REAL-TIME & TELEPORT ZONA -->
+        <div class="fixed top-3 right-3 flex flex-col items-end gap-2 pointer-events-auto">
+            <div class="glass-hud p-2 rounded-2xl shadow-xl flex flex-col items-center">
+                <canvas id="minimap-canvas" width="150" height="150" class="rounded-xl border-2 border-white/40 bg-emerald-900"></canvas>
+                <span class="text-[10px] text-white/90 font-bold mt-1">🧭 Peta Dunia (±300m)</span>
+            </div>
+
+            <!-- PANEL LIVE MABAR 200 MURID (MUNCUL SAAT MODE MABAR AKTIF) -->
+            <div id="mabar-live-panel" class="hidden glass-hud rounded-2xl p-3 text-white w-64 shadow-2xl border-2 border-purple-400">
+                <div class="flex justify-between items-center border-b border-white/20 pb-1.5 mb-1.5">
+                    <span id="mabar-panel-title" class="font-bold text-xs text-purple-300">🔥 MABAR LIVE</span>
+                    <span id="mabar-timer-badge" class="bg-rose-500 text-white font-bold text-xs px-2 py-0.5 rounded-lg">05:00</span>
+                </div>
+                <div id="mabar-online-status" class="text-[10px] text-emerald-300 font-bold mb-1.5 bg-emerald-950/60 px-2 py-0.5 rounded">
+                    🌐 Terhubung: 1 Siswa Online
+                </div>
+                <div id="mabar-top10-list" class="space-y-1 text-[11px] max-h-44 overflow-y-auto">
+                    <!-- Top 10 Mabar -->
+                </div>
+                <div id="mabar-self-rank" class="mt-2 pt-1.5 border-t border-white/20 text-xs font-bold text-amber-300 flex justify-between">
+                    <span>Peringkatmu: #1</span>
+                    <span>0 XP</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROMPT INTERAKSI DI TENGAH BAWAH -->
+        <div id="interaction-prompt" class="hidden fixed bottom-24 left-1/2 -translate-x-1/2 pointer-events-auto">
+            <button id="btn-interact-action" class="btn-roblox animate-bounce bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold px-5 py-2.5 rounded-2xl border-4 border-white shadow-2xl text-sm md:text-base">
+                💬 Tekan [E] / Klik untuk Bicara
+            </button>
+        </div>
+
+        <!-- BAR AKSI BAWAH (DESKTOP & MOBILE) -->
+        <div class="fixed bottom-3 left-3 right-3 flex justify-between items-end pointer-events-none">
+            <!-- Virtual D-Pad untuk Mobile/Touch -->
+            <div class="sm:hidden relative w-32 h-32 pointer-events-auto">
+                <button id="touch-up" class="w-10 h-10 bg-white/80 rounded-xl font-bold absolute top-0 left-1/2 -translate-x-1/2 shadow">▲</button>
+                <button id="touch-down" class="w-10 h-10 bg-white/80 rounded-xl font-bold absolute bottom-0 left-1/2 -translate-x-1/2 shadow">▼</button>
+                <button id="touch-left" class="w-10 h-10 bg-white/80 rounded-xl font-bold absolute left-0 top-1/2 -translate-y-1/2 shadow">◀</button>
+                <button id="touch-right" class="w-10 h-10 bg-white/80 rounded-xl font-bold absolute right-0 top-1/2 -translate-y-1/2 shadow">▶</button>
+            </div>
+
+            <!-- Hint Kontrol Desktop -->
+            <div class="hidden sm:flex glass-hud px-3.5 py-2 rounded-2xl text-white text-xs gap-3 pointer-events-auto">
+                <span><b>WASD</b> Gerak</span>
+                <span>•</span>
+                <span><b>Shift</b> Lari</span>
+                <span>•</span>
+                <span><b>Spasi</b> Lompat</span>
+                <span>•</span>
+                <span><b>Klik Kiri / F</b> Serang</span>
+                <span>•</span>
+                <span><b>E</b> Bicara Guru</span>
+            </div>
+
+            <!-- Tombol Serang & Lompat Sentuh -->
+            <div class="flex gap-2 pointer-events-auto">
+                <button id="btn-action-attack" class="btn-roblox bg-rose-500 hover:bg-rose-400 text-white font-bold w-14 h-14 sm:w-auto sm:h-auto sm:px-4 sm:py-2.5 rounded-2xl border-3 border-white shadow-xl flex items-center justify-center gap-1.5 text-sm">
+                    <span>⚔️</span> <span class="hidden sm:inline">Serang (F)</span>
+                </button>
+                <button id="btn-action-jump" class="sm:hidden btn-roblox bg-emerald-500 text-white font-bold w-14 h-14 rounded-2xl border-3 border-white shadow-xl flex items-center justify-center text-lg">
+                    ⬆️
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFIKASI -->
+    <div id="toast-box" class="hidden fixed top-20 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+        <div id="toast-text" class="bg-indigo-600 text-white font-bold px-5 py-2.5 rounded-full border-4 border-white shadow-2xl text-sm md:text-base text-center">
+            Notifikasi
+        </div>
+    </div>
+
+    <!-- ======================================================================== -->
+    <!-- START SCREEN & PILIH KELAS (WAJIB DI AWAL)                               -->
+    <!-- ======================================================================== -->
+    <div id="start-screen-modal" class="fixed inset-0 bg-gradient-to-b from-sky-500/85 to-indigo-900/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="glass-panel max-w-2xl w-full rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-amber-400 my-auto">
+            <div class="text-center mb-5">
+                <div class="inline-block bg-amber-400 text-amber-950 font-bold text-xs px-3 py-1 rounded-full mb-2 border-2 border-amber-600">
+                    🧱 DUNIA BELAJAR 3D OPEN-WORLD SD
+                </div>
+                <h1 class="text-3xl md:text-4xl font-bold text-slate-800 tracking-tight">EduBlox Nusantara 3D</h1>
+                <p class="text-xs md:text-sm text-slate-600 mt-1">Jelajahi 6 Zona Belajar, Kalahkan Monster, Jawab Kuis & Mabar Online!</p>
+            </div>
+
+            <!-- Input Nama Pemain -->
+            <div class="mb-4">
+                <label class="block font-bold text-slate-800 text-sm mb-1.5">1. Masukkan Nama Pemain:</label>
+                <input type="text" id="start-input-name" placeholder="Ketik namamu di sini (contoh: Budi)..." maxlength="16"
+                    class="w-full px-4 py-3 rounded-2xl border-3 border-slate-300 focus:border-blue-500 outline-none font-bold text-slate-800 text-base bg-white">
+            </div>
+
+            <!-- Tombol PILIH KELAS (1 - 6) -->
+            <div class="mb-5">
+                <div class="flex justify-between items-center mb-1.5">
+                    <label class="font-bold text-slate-800 text-sm">2. PILIH KELAS (Menentukan Tingkat Soal Kuis):</label>
+                    <span id="start-selected-grade-label" class="text-xs font-bold text-blue-600 bg-blue-100 px-2.5 py-0.5 rounded-lg">Belum dipilih</span>
+                </div>
+                <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                    <button type="button" data-grade="1" class="grade-choice-btn btn-roblox bg-white hover:bg-blue-50 text-slate-800 font-bold py-3 rounded-2xl border-3 border-slate-300 text-sm">KELAS 1</button>
+                    <button type="button" data-grade="2" class="grade-choice-btn btn-roblox bg-white hover:bg-blue-50 text-slate-800 font-bold py-3 rounded-2xl border-3 border-slate-300 text-sm">KELAS 2</button>
+                    <button type="button" data-grade="3" class="grade-choice-btn btn-roblox bg-white hover:bg-blue-50 text-slate-800 font-bold py-3 rounded-2xl border-3 border-slate-300 text-sm">KELAS 3</button>
+                    <button type="button" data-grade="4" class="grade-choice-btn btn-roblox bg-white hover:bg-blue-50 text-slate-800 font-bold py-3 rounded-2xl border-3 border-slate-300 text-sm">KELAS 4</button>
+                    <button type="button" data-grade="5" class="grade-choice-btn btn-roblox bg-white hover:bg-blue-50 text-slate-800 font-bold py-3 rounded-2xl border-3 border-slate-300 text-sm">KELAS 5</button>
+                    <button type="button" data-grade="6" class="grade-choice-btn btn-roblox bg-white hover:bg-blue-50 text-slate-800 font-bold py-3 rounded-2xl border-3 border-slate-300 text-sm">KELAS 6</button>
+                </div>
+            </div>
+
+            <!-- Instruksi Cara Main -->
+            <div class="bg-sky-50 border-2 border-sky-200 rounded-2xl p-3.5 mb-5 text-xs text-slate-700 space-y-1">
+                <div class="font-bold text-sky-900 text-sm mb-1">📖 Cara Bermain:</div>
+                <p>• <b>Gerak & Kamera:</b> Gunakan <b>WASD / Panah</b> untuk berjalan, <b>Shift</b> untuk lari, <b>Spasi</b> untuk lompat, seret <b>Mouse</b> untuk memutar kamera, dan <b>Scroll</b> untuk zoom.</p>
+                <p>• <b>Belajar & Bertarung:</b> Kunjungi 6 Zona (Matematika, IPAS, B. Indonesia, PKN, Koding, AI). Tekan <b>[E]</b> dekat Guru untuk membaca materi & kuis, atau <b>Klik Kiri / [F]</b> untuk mengalahkan monster dan memicu kuis!</p>
+            </div>
+
+            <button id="btn-start-play" disabled class="btn-roblox w-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-4 rounded-2xl border-4 border-emerald-700 text-lg md:text-xl">
+                🚀 Mulai Bermain
+            </button>
+        </div>
+    </div>
+
+    <!-- ======================================================================== -->
+    <!-- DIALOG BOX NPC RAMAH (MATERI SESUAI KELAS)                              -->
+    <!-- ======================================================================== -->
+    <div id="npc-dialog-modal" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-panel max-w-lg w-full rounded-3xl p-6 shadow-2xl border-4 border-amber-400">
+            <div class="flex items-center gap-3 mb-3">
+                <div id="npc-dialog-icon" class="w-12 h-12 rounded-2xl bg-amber-400 flex items-center justify-center text-2xl border-2 border-amber-600">🏫</div>
+                <div>
+                    <h3 id="npc-dialog-name" class="font-bold text-lg text-slate-800">Guru Matematika</h3>
+                    <span id="npc-dialog-sub" class="text-xs font-bold text-blue-600">Materi Kelas 4</span>
+                </div>
+            </div>
+            <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 mb-5">
+                <p id="npc-dialog-text" class="text-sm md:text-base text-slate-700 leading-relaxed font-medium">
+                    Materi pembelajaran...
+                </p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <button id="btn-npc-close" class="btn-roblox bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 rounded-2xl border-3 border-slate-400 text-sm">
+                    Tutup
+                </button>
+                <button id="btn-npc-start-quiz" class="btn-roblox bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-2xl border-3 border-blue-800 text-sm">
+                    📝 Kerjakan Kuis!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================================== -->
+    <!-- POPUP KUIS PILIHAN GANDA                                                 -->
+    <!-- ======================================================================== -->
+    <div id="quiz-popup-modal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-panel max-w-xl w-full rounded-3xl p-6 shadow-2xl border-4 border-blue-500">
+            <div class="flex justify-between items-center mb-3">
+                <span id="quiz-subject-badge" class="bg-blue-600 text-white font-bold text-xs md:text-sm px-3 py-1 rounded-xl">🏫 Matematika • Kelas 4</span>
+                <span id="quiz-progress-badge" class="bg-emerald-100 text-emerald-800 font-bold text-xs px-2.5 py-1 rounded-xl border border-emerald-300">Progress: 0/5 Benar</span>
+            </div>
+
+            <div class="bg-slate-100 border-2 border-slate-300 rounded-2xl p-4 mb-4">
+                <p id="quiz-question-text" class="font-bold text-slate-800 text-base md:text-lg leading-snug">
+                    Pertanyaan kuis muncul di sini...
+                </p>
+            </div>
+
+            <div id="quiz-options-list" class="space-y-2.5 mb-4">
+                <!-- Tombol pilihan A, B, C, D -->
+            </div>
+
+            <div id="quiz-result-box" class="hidden rounded-2xl p-3.5 mb-4 border-2">
+                <p id="quiz-result-title" class="font-bold text-base mb-1"></p>
+                <p id="quiz-result-exp" class="text-xs md:text-sm text-slate-700"></p>
+                <button id="btn-quiz-continue" class="btn-roblox mt-3 w-full bg-indigo-600 text-white font-bold py-2.5 rounded-xl border-2 border-indigo-800 text-sm">
+                    Lanjutkan Petualangan ➔
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================================== -->
+    <!-- MODAL RAPOR BELAJAR                                                      -->
+    <!-- ======================================================================== -->
+    <div id="rapor-modal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-panel max-w-2xl w-full rounded-3xl p-6 shadow-2xl border-4 border-emerald-500 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b-2 border-slate-200 pb-3 mb-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800">📊 Rapor Belajar Siswa</h2>
+                    <p id="rapor-student-info" class="text-xs md:text-sm font-bold text-emerald-700">Nama: Budi • Kelas 4</p>
+                </div>
+                <button id="btn-close-rapor" class="btn-roblox bg-rose-500 text-white font-bold px-3.5 py-1.5 rounded-xl text-sm">✖ Tutup</button>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3 mb-4 text-center">
+                <div class="bg-blue-50 border-2 border-blue-200 rounded-2xl p-3">
+                    <div class="text-xs text-slate-500 font-bold">Total XP</div>
+                    <div id="rapor-total-xp" class="text-xl font-bold text-blue-700">0 XP</div>
+                </div>
+                <div class="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-3">
+                    <div class="text-xs text-slate-500 font-bold">Total Poin Belajar</div>
+                    <div id="rapor-total-points" class="text-xl font-bold text-emerald-700">0 / 30</div>
+                </div>
+                <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-3">
+                    <div class="text-xs text-slate-500 font-bold">Akurasi Jawaban</div>
+                    <div id="rapor-accuracy" class="text-xl font-bold text-amber-700">0%</div>
+                </div>
+            </div>
+
+            <div id="rapor-subjects-list" class="space-y-2.5">
+                <!-- Daftar progress 6 mapel -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================================== -->
+    <!-- MODAL KLASMEN / LEADERBOARD (UMUM & PER MATA PELAJARAN)                  -->
+    <!-- ======================================================================== -->
+    <div id="klasmen-modal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-panel max-w-3xl w-full rounded-3xl p-6 shadow-2xl border-4 border-amber-400 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center border-b-2 border-slate-200 pb-3 mb-3">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800">🏆 Klasmen EduBlox Nusantara</h2>
+                    <p class="text-xs text-slate-500">Diurutkan berdasarkan Total XP, Jawaban Benar, lalu Koin</p>
+                </div>
+                <button id="btn-close-klasmen" class="btn-roblox bg-rose-500 text-white font-bold px-3.5 py-1.5 rounded-xl text-sm">✖ Tutup</button>
+            </div>
+
+            <!-- Tab Filter Klasmen Umum vs Per Mapel -->
+            <div class="flex flex-wrap gap-1.5 mb-3">
+                <button data-lb-filter="ALL" class="lb-filter-btn bg-amber-400 text-amber-950 font-bold px-3 py-1 rounded-xl text-xs border-2 border-amber-600">🌟 Semua Mapel</button>
+                <button data-lb-filter="Matematika" class="lb-filter-btn bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-xl text-xs border border-slate-300">🏫 Matematika</button>
+                <button data-lb-filter="IPAS" class="lb-filter-btn bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-xl text-xs border border-slate-300">🌿 IPAS</button>
+                <button data-lb-filter="Bahasa Indonesia" class="lb-filter-btn bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-xl text-xs border border-slate-300">📚 B. Indonesia</button>
+                <button data-lb-filter="PKN" class="lb-filter-btn bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-xl text-xs border border-slate-300">🏛️ PKN</button>
+                <button data-lb-filter="Koding" class="lb-filter-btn bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-xl text-xs border border-slate-300">💻 Koding</button>
+                <button data-lb-filter="AI" class="lb-filter-btn bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-xl text-xs border border-slate-300">🤖 AI</button>
+            </div>
+
+            <div class="overflow-y-auto rounded-2xl border-2 border-slate-200 flex-1">
+                <table class="w-full text-left text-xs md:text-sm">
+                    <thead class="bg-slate-800 text-white sticky top-0">
+                        <tr>
+                            <th class="py-2.5 px-3">Peringkat</th>
+                            <th class="py-2.5 px-3">Nama Murid</th>
+                            <th class="py-2.5 px-3">Kelas</th>
+                            <th class="py-2.5 px-3 text-center">Benar</th>
+                            <th class="py-2.5 px-3 text-right">Koin</th>
+                            <th class="py-2.5 px-3 text-right">Total XP</th>
+                        </tr>
+                    </thead>
+                    <tbody id="klasmen-tbody" class="divide-y divide-slate-200 bg-white">
+                        <!-- Diisi dinamis -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================================== -->
+    <!-- MODAL SETUP MABAR 200 MURID & ONLINE REAL-TIME                           -->
+    <!-- ======================================================================== -->
+    <div id="mabar-setup-modal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-panel max-w-lg w-full rounded-3xl p-6 shadow-2xl border-4 border-purple-500 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-xl md:text-2xl font-bold text-slate-800">🔥 Mode Mabar Online Real-Time</h2>
+                <button id="btn-close-mabar-setup" class="text-slate-500 hover:text-slate-800 font-bold text-lg">✖</button>
+            </div>
+            <p class="text-xs md:text-sm text-slate-600 mb-3">
+                Main bareng teman sekelas dari <b>HP atau Laptop berbeda secara real-time</b> (termasuk saat di-publish di GitHub Pages)!
+            </p>
+
+            <div class="space-y-3 mb-4">
+                <!-- Pilih Mode Mabar -->
+                <div class="grid grid-cols-2 gap-2">
+                    <button type="button" id="btn-mode-online-real" class="btn-roblox bg-emerald-500 text-white font-bold p-3 rounded-2xl border-3 border-emerald-700 text-left text-xs">
+                        <div class="text-base mb-0.5">🌐 Online Antar HP/PC</div>
+                        <div class="font-normal opacity-90">Karakter teman tampil 3D & skor live</div>
+                    </button>
+                    <button type="button" id="btn-mode-sim-200" class="btn-roblox bg-slate-100 text-slate-800 font-bold p-3 rounded-2xl border-3 border-slate-300 text-left text-xs">
+                        <div class="text-base mb-0.5">🤖 Simulasi 200 Murid</div>
+                        <div class="font-normal opacity-80">Kompetisi 200 peserta AI offline</div>
+                    </button>
+                </div>
+
+                <!-- Pengaturan Room Online -->
+                <div id="mabar-online-config-box" class="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-3.5 space-y-2.5">
+                    <div>
+                        <label class="block font-bold text-emerald-950 text-xs mb-1">1. Ketik Kode Room Kelas (Harus Sama Antar Teman):</label>
+                        <input type="text" id="mabar-room-code" value="KELAS4A" maxlength="14"
+                            class="w-full px-3 py-2 rounded-xl border-2 border-emerald-400 font-bold text-emerald-950 text-sm uppercase bg-white">
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" id="mabar-fill-bots" checked class="w-4 h-4 accent-emerald-600 rounded">
+                        <label for="mabar-fill-bots" class="text-xs font-bold text-emerald-900">
+                            Tambahkan Murid AI hingga 200 peserta agar semakin ramai
+                        </label>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <button type="button" id="btn-host-online-room" class="btn-roblox bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-3 rounded-xl border-2 border-blue-800 text-xs">
+                            👑 Buat Room (Guru / Host)
+                        </button>
+                        <button type="button" id="btn-join-online-room" class="btn-roblox bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-3 rounded-xl border-2 border-emerald-800 text-xs">
+                            🚀 Gabung Room Teman
+                        </button>
+                    </div>
+                    <p id="mabar-conn-feedback" class="text-[11px] font-bold text-slate-600 text-center">
+                        Pilih "Buat Room" di 1 perangkat, lalu "Gabung Room" di perangkat teman.
+                    </p>
+                </div>
+            </div>
+
+            <button id="btn-start-mabar" class="btn-roblox w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-2xl border-4 border-purple-800 text-base">
+                ⚡ Mulai Simulasi Offline 200 Murid
+            </button>
+        </div>
+    </div>
+
+    <!-- ======================================================================== -->
+    <!-- MODAL HASIL AKHIR MABAR 200 MURID                                        -->
+    <!-- ======================================================================== -->
+    <div id="mabar-result-modal" class="hidden fixed inset-0 bg-indigo-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="glass-panel max-w-lg w-full rounded-3xl p-6 text-center shadow-2xl border-4 border-amber-400">
+            <div class="text-5xl mb-2">🏆</div>
+            <h2 class="text-2xl md:text-3xl font-bold text-slate-800 mb-1">Waktu Mabar Habis!</h2>
+            <p id="mabar-final-rank-msg" class="text-sm md:text-base font-bold text-purple-700 mb-4">
+                Kamu meraih Peringkat #1 dari 200 Peserta!
+            </p>
+
+            <!-- Podium Juara 1 - 3 -->
+            <div class="grid grid-cols-3 gap-2 items-end bg-amber-50 border-2 border-amber-300 rounded-2xl p-3 mb-5">
+                <div class="bg-slate-200 rounded-xl p-2 border border-slate-400">
+                    <div class="text-xl">🥈</div>
+                    <p id="mabar-p2-name" class="font-bold text-xs truncate">Siti (Kls 4)</p>
+                    <p id="mabar-p2-xp" class="text-[11px] font-bold text-slate-600">450 XP</p>
+                </div>
+                <div class="bg-amber-300 rounded-xl p-2.5 border-2 border-amber-500 shadow">
+                    <div class="text-2xl">👑</div>
+                    <p id="mabar-p1-name" class="font-bold text-xs md:text-sm truncate">Budi (Kls 4)</p>
+                    <p id="mabar-p1-xp" class="text-xs font-bold text-amber-950">520 XP</p>
+                </div>
+                <div class="bg-orange-200 rounded-xl p-2 border border-orange-400">
+                    <div class="text-xl">🥉</div>
+                    <p id="mabar-p3-name" class="font-bold text-xs truncate">Rizky (Kls 5)</p>
+                    <p id="mabar-p3-xp" class="text-[11px] font-bold text-orange-900">410 XP</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2.5">
+                <button id="btn-mabar-play-again" class="btn-roblox bg-emerald-500 text-white font-bold py-3 rounded-2xl border-3 border-emerald-700 text-sm md:text-base">
+                    🔄 Main Lagi
+                </button>
+                <button id="btn-mabar-exit" class="btn-roblox bg-slate-200 text-slate-800 font-bold py-3 rounded-2xl border-3 border-slate-400 text-sm md:text-base">
+                    Kembali Eksplorasi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================================== -->
+    <!-- MODAL PAUSE (ESC) & GAME OVER / RESPAWN                                  -->
+    <!-- ======================================================================== -->
+    <div id="pause-modal" class="hidden fixed inset-0 bg-slate-900/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-panel max-w-sm w-full rounded-3xl p-6 text-center shadow-2xl">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">⏸️ Permainan Dijeda</h2>
+            <div class="space-y-2.5">
+                <button id="btn-resume-game" class="btn-roblox w-full bg-emerald-500 text-white font-bold py-3 rounded-2xl border-3 border-emerald-700">
+                    ▶ Lanjutkan Bermain
+                </button>
+                <button id="btn-tp-spawn" class="btn-roblox w-full bg-sky-500 text-white font-bold py-3 rounded-2xl border-3 border-sky-700">
+                    🏠 Kembali ke Titik Awal
+                </button>
+                <button id="btn-change-grade-menu" class="btn-roblox w-full bg-amber-400 text-amber-950 font-bold py-3 rounded-2xl border-3 border-amber-600">
+                    🎓 Ganti Nama / Kelas
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="gameover-modal" class="hidden fixed inset-0 bg-rose-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-panel max-w-sm w-full rounded-3xl p-6 text-center shadow-2xl border-4 border-rose-500">
+            <div class="text-5xl mb-2">💫</div>
+            <h2 class="text-2xl font-bold text-rose-600 mb-1">HP Habis!</h2>
+            <p class="text-xs md:text-sm text-slate-600 mb-4">Jangan menyerah! Karaktermu akan bangkit kembali di titik awal dengan HP penuh.</p>
+            <button id="btn-respawn-now" class="btn-roblox w-full bg-emerald-500 text-white font-bold py-3 rounded-2xl border-4 border-emerald-700 text-base">
+                ❤️ Bangkit & Lanjutkan!
+            </button>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * ============================================================================
+         * 1. START_KELAS: KONFIGURASI ZONA, STATE PEMAIN & PERSISTENSI LOCALSTORAGE
+         * ============================================================================
+         */
+        const STORAGE_KEY = 'edublox_nusantara_save_v1';
+        const LEADERBOARD_KEY = 'edublox_nusantara_leaderboard_v1';
+
+        const ZONES_CONFIG = [
+            {
+                id: 'Matematika',
+                title: 'Gedung Matematika',
+                icon: '🏫',
+                color: 0x2563eb,
+                hex: '#2563eb',
+                x: -65,
+                z: -60,
+                npcName: 'Pak Budi (Guru Matematika)',
+                enemyName: 'Slime Angka',
+                enemyColor: 0x3b82f6,
+                materials: {
+                    1: 'Halo Kelas 1! Di Gedung Matematika kita belajar penjumlahan dan pengurangan bilangan 1 sampai 20, serta mengenal bentuk bangun datar seperti lingkaran dan segitiga.',
+                    2: 'Halo Kelas 2! Kita berlatih perkalian dasar, nilai tempat ratusan-puluhan-satuan, serta membaca jam dan satuan panjang meter/sentimeter.',
+                    3: 'Halo Kelas 3! Mari kuasai perkalian dan pembagian bersusun, pecahan sederhana (1/2, 1/4), serta keliling persegi dan persegi panjang.',
+                    4: 'Halo Kelas 4! Fokus kita adalah Faktor Persekutuan Terbesar (FPB), Kelipatan Persekutuan Terkecil (KPK), pecahan senilai, dan pengukuran sudut.',
+                    5: 'Halo Kelas 5! Kita mempelajari operasi hitung pecahan campuran, kecepatan-jarak-waktu, serta volume bangun ruang kubus dan balok.',
+                    6: 'Halo Kelas 6! Tantangan tingkat akhir SD: bilangan bulat negatif, luas & keliling lingkaran, volume tabung/kubus, serta rata-rata (mean) data!'
+                }
+            },
+            {
+                id: 'IPAS',
+                title: 'Area IPAS',
+                icon: '🌿',
+                color: 0x16a34a,
+                hex: '#16a34a',
+                x: 65,
+                z: -60,
+                npcName: 'Bu Sari (Guru IPAS)',
+                enemyName: 'Monster Polusi',
+                enemyColor: 0x15803d,
+                materials: {
+                    1: 'Selamat datang di Area IPAS Kelas 1! Kita mengenal bagian tubuh manusia, panca indra, serta bagian tumbuhan seperti akar, batang, dan daun.',
+                    2: 'Halo Kelas 2! Kita belajar wujud benda (padat, cair, gas), tempat hidup hewan, dan cara menjaga kebersihan lingkungan sekitar.',
+                    3: 'Halo Kelas 3! Mari pelajari daur hidup/metamorfosis hewan (kupu-kupu dan katak), sumber energi, serta perubahan cuaca.',
+                    4: 'Halo Kelas 4! Kita mendalami bagian bunga dan penyerbukan, macam-macam gaya (gravitasi, magnet, gesek), serta perubahan wujud benda.',
+                    5: 'Halo Kelas 5! Fokus kita adalah rantai makanan di ekosistem, sistem pernapasan dan pencernaan manusia, serta sifat-sifat cahaya.',
+                    6: 'Halo Kelas 6! Kita mempelajari fotosintesis tumbuhan, tata surya dan revolusi bumi, rangkaian listrik seri/paralel, serta perkembangbiakan makhluk hidup.'
+                }
+            },
+            {
+                id: 'Bahasa Indonesia',
+                title: 'Perpustakaan B. Indonesia',
+                icon: '📚',
+                color: 0xea580c,
+                hex: '#ea580c',
+                x: -85,
+                z: 20,
+                npcName: 'Bu Ratna (Pustakawan)',
+                enemyName: 'Kutu Salah Eja',
+                enemyColor: 0xf97316,
+                materials: {
+                    1: 'Selamat datang Kelas 1! Kita belajar mengenal huruf vokal dan konsonan, membaca suku kata, serta mengucapkan kata tolong, maaf, dan terima kasih.',
+                    2: 'Halo Kelas 2! Kita berlatih menggunakan huruf kapital pada awal kalimat dan nama orang, tanda titik, tanda tanya, serta lawan kata (antonim).',
+                    3: 'Halo Kelas 3! Mari memahami ide pokok paragraf, sinonim (persamaan kata), kalimat perintah, dan isi dongeng anak Nusantara.',
+                    4: 'Halo Kelas 4! Kita belajar membedakan kalimat transitif dan intransitif, makna awalan me- dan ber-, serta wawancara sederhana.',
+                    5: 'Halo Kelas 5! Fokus kita adalah majas (personifikasi, metafora), unsur intrinsik cerita, teks eksplanasi, dan pantun nasihat.',
+                    6: 'Halo Kelas 6! Kita menguasai kalimat efektif, kata baku sesuai KBBI, struktur surat resmi, serta pidato persuasif.'
+                }
+            },
+            {
+                id: 'PKN',
+                title: 'Balai PKN',
+                icon: '🏛️',
+                color: 0xdc2626,
+                hex: '#dc2626',
+                x: 85,
+                z: 20,
+                npcName: 'Pak Garuda (Guru PKN)',
+                enemyName: 'Golem Egois',
+                enemyColor: 0xef4444,
+                materials: {
+                    1: 'Salam Pancasila Kelas 1! Kita mengenal lambang negara Garuda Pancasila, simbol-simbol sila Pancasila, dan aturan di rumah.',
+                    2: 'Halo Kelas 2! Kita belajar contoh sikap rukun di sekolah, menghormati teman yang berbeda, dan mematuhi tata tertib kelas.',
+                    3: 'Halo Kelas 3! Mari pahami makna semboyan Bhinneka Tunggal Ika, hak dan kewajiban anak di rumah serta sekolah.',
+                    4: 'Halo Kelas 4! Fokus kita adalah keberagaman budaya, suku bangsa, rumah adat di Indonesia, serta semangat gotong royong.',
+                    5: 'Halo Kelas 5! Kita mempelajari nilai-nilai luhur Pancasila dalam musyawarah mufakat dan tanggung jawab sebagai warga masyarakat.',
+                    6: 'Halo Kelas 6! Kita mendalami kewajiban dan hak warga negara menurut UUD 1945, persatuan kesatuan, serta peran Indonesia di ASEAN.'
+                }
+            },
+            {
+                id: 'Koding',
+                title: 'Lab Koding',
+                icon: '💻',
+                color: 0x7c3aed,
+                hex: '#7c3aed',
+                x: -60,
+                z: 85,
+                npcName: 'Kak Raka (Mentor Koding)',
+                enemyName: 'Robot Bug',
+                enemyColor: 0x8b5cf6,
+                materials: {
+                    1: 'Halo Kelas 1! Koding dimulai dari berpikir urut (algoritma), seperti urutan langkah menyikat gigi atau memakai sepatu yang benar!',
+                    2: 'Halo Kelas 2! Kita belajar memberi perintah arah (maju, belok kiri, belok kanan) untuk memandu robot sampai ke tujuan.',
+                    3: 'Halo Kelas 3! Mari mengenal pola berulang dan cara menemukan kesalahan (debugging) pada urutan perintah sederhana.',
+                    4: 'Halo Kelas 4! Kita belajar blok logika percabangan "JIKA - MAKA" (If-Else), misalnya: Jika hujan turun, maka buka payung.',
+                    5: 'Halo Kelas 5! Fokus kita adalah perulangan (Looping) agar kode lebih ringkas, serta variabel untuk menyimpan skor game.',
+                    6: 'Halo Kelas 6! Kita merancang algoritma efisien dengan kombinasi Loop, Kondisi Logika (AND/OR), Variabel, dan Fungsi!'
+                }
+            },
+            {
+                id: 'AI',
+                title: 'Pusat AI',
+                icon: '🤖',
+                color: 0x0891b2,
+                hex: '#0891b2',
+                x: 60,
+                z: 85,
+                npcName: 'Dr. Aura (Mentor AI)',
+                enemyName: 'Virus Data',
+                enemyColor: 0x06b6d4,
+                materials: {
+                    1: 'Halo Kelas 1! Kecerdasan Artifisial (AI) membuat mesin bisa membantu manusia, seperti asisten suara pintar dan robot penyapu lantai.',
+                    2: 'Halo Kelas 2! AI belajar mengenali gambar dan suara manusia melalui sensor kamera dan mikrofon pada perangkat pintar.',
+                    3: 'Halo Kelas 3! Kita mengenal bagaimana AI memberi rekomendasi video belajar atau lagu yang sesuai dengan minat kita.',
+                    4: 'Halo Kelas 4! AI membutuhkan data latih (training data) yang banyak dan bersih agar tidak salah mengenali objek.',
+                    5: 'Halo Kelas 5! Mari pahami etika menggunakan AI: selalu cek kebenaran informasi dan jangan menyontek tugas sekolah dengan AI.',
+                    6: 'Halo Kelas 6! Kita mempelajari konsep Machine Learning (pembelajaran mesin dari pola data), pengenalan wajah, dan pemrosesan bahasa alami.'
+                }
+            }
+        ];
+
+        const playerData = {
+            name: '',
+            grade: 0,
+            xp: 0,
+            level: 1,
+            coins: 0,
+            hp: 100,
+            maxHp: 100,
+            stamina: 100,
+            damage: 25,
+            totalAnswered: 0,
+            totalCorrect: 0,
+            subjectProgress: {
+                'Matematika': { correct: 0, answered: 0 },
+                'IPAS': { correct: 0, answered: 0 },
+                'Bahasa Indonesia': { correct: 0, answered: 0 },
+                'PKN': { correct: 0, answered: 0 },
+                'Koding': { correct: 0, answered: 0 },
+                'AI': { correct: 0, answered: 0 }
+            }
+        };
+
+        const gameState = {
+            started: false,
+            paused: false,
+            modalOpen: false,
+            activeZoneId: 'Matematika',
+            activeQuiz: null,
+            usedQuestions: new Set(),
+            mabarActive: false,
+            mabarMode: 'offline', // 'offline' | 'online_host' | 'online_client'
+            mabarRoomCode: 'KELAS4A',
+            mabarWithBots: true,
+            mabarTimeLeft: 300,
+            mabarParticipants: []
+        };
+
+        function loadSavedData() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    Object.assign(playerData, parsed);
+                    if (!playerData.subjectProgress) {
+                        playerData.subjectProgress = {
+                            'Matematika': { correct: 0, answered: 0 },
+                            'IPAS': { correct: 0, answered: 0 },
+                            'Bahasa Indonesia': { correct: 0, answered: 0 },
+                            'PKN': { correct: 0, answered: 0 },
+                            'Koding': { correct: 0, answered: 0 },
+                            'AI': { correct: 0, answered: 0 }
+                        };
+                    }
+                }
+            } catch (e) {
+                console.warn('Gagal memuat data simpanan:', e);
+            }
+        }
+
+        function savePlayerData() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(playerData));
+                updatePersistentLeaderboard();
+            } catch (e) {
+                console.warn('Gagal menyimpan data:', e);
+            }
+        }
+
+        /**
+         * ============================================================================
+         * 6. BANK_SOAL_PER_KELAS: 180 SOAL (5 SOAL × 6 MAPEL × 6 KELAS)
+         * ============================================================================
+         */
+        const QUESTION_BANK = {
+            // ======================== KELAS 1 (30 SOAL) ========================
+            1: {
+                'Matematika': [
+                    { q: '2 + 3 = ...', opts: ['4', '5', '6', '7'], ans: 1, exp: '2 ditambah 3 sama dengan 5.' },
+                    { q: 'Ibu punya 7 permen, dimakan 2 permen. Sisa permen Ibu adalah...', opts: ['4', '5', '6', '9'], ans: 1, exp: '7 dikurangi 2 sama dengan 5.' },
+                    { q: 'Benda yang berbentuk lingkaran adalah...', opts: ['Buku tulis', 'Roda sepeda', 'Papan tulis', 'Penggaris'], ans: 1, exp: 'Roda sepeda berbentuk bulat melingkar.' },
+                    { q: 'Angka setelah angka 14 adalah...', opts: ['13', '15', '16', '12'], ans: 1, exp: 'Urutan bilangan: 13, 14, 15.' },
+                    { q: '4 + 6 = ...', opts: ['8', '9', '10', '11'], ans: 2, exp: '4 ditambah 6 sama dengan 10.' }
+                ],
+                'IPAS': [
+                    { q: 'Bagian tumbuhan yang berada di dalam tanah untuk menyerap air adalah...', opts: ['Daun', 'Akar', 'Bunga', 'Buah'], ans: 1, exp: 'Akar menyerap air dan zat hara dari dalam tanah.' },
+                    { q: 'Indra yang kita gunakan untuk melihat warna pelangi adalah...', opts: ['Telinga', 'Hidung', 'Mata', 'Lidah'], ans: 2, exp: 'Mata adalah indra penglihatan.' },
+                    { q: 'Hewan yang berkokok di pagi hari adalah...', opts: ['Kucing', 'Ayam jantan', 'Ikan', 'Kelinci'], ans: 1, exp: 'Ayam jantan berkokok setiap pagi.' },
+                    { q: 'Benda langit yang bersinar terang pada siang hari adalah...', opts: ['Bulan', 'Bintang', 'Matahari', 'Awan'], ans: 2, exp: 'Matahari menyinari bumi di siang hari.' },
+                    { q: 'Agar gigi tetap sehat dan bersih, kita harus rajin...', opts: ['Makan permen', 'Menggosok gigi', 'Tidur larut', 'Minum es'], ans: 1, exp: 'Menggosok gigi membersihkan sisa makanan.' }
+                ],
+                'Bahasa Indonesia': [
+                    { q: "Huruf pertama dari kata 'buku' adalah...", opts: ['a', 'b', 'u', 'k'], ans: 1, exp: "Kata 'buku' diawali huruf 'b'." },
+                    { q: "Lawan kata dari 'besar' adalah...", opts: ['Tinggi', 'Kecil', 'Panjang', 'Luas'], ans: 1, exp: 'Lawan kata besar adalah kecil.' },
+                    { q: 'Jika diberi hadiah oleh teman, kita mengucapkan...', opts: ['Maaf', 'Terima kasih', 'Permisi', 'Sampai jumpa'], ans: 1, exp: 'Kita mengucapkan terima kasih saat menerima kebaikan.' },
+                    { q: "Suku kata pertama dari 'me-ja' adalah...", opts: ['ja', 'me', 'ma', 'je'], ans: 1, exp: "Kata 'meja' terdiri dari suku kata 'me' dan 'ja'." },
+                    { q: 'Hewan yang bunyinya "meong-meong" adalah...', opts: ['Anjing', 'Kucing', 'Bebek', 'Sapi'], ans: 1, exp: 'Kucing bersuara meong.' }
+                ],
+                'PKN': [
+                    { q: 'Simbol sila pertama Pancasila adalah...', opts: ['Rantai', 'Bintang', 'Pohon Beringin', 'Padi dan Kapas'], ans: 1, exp: 'Sila pertama Ketuhanan Yang Maha Esa bersimbol Bintang.' },
+                    { q: 'Warna bendera negara Indonesia adalah...', opts: ['Merah Putih', 'Putih Biru', 'Merah Kuning', 'Hijau Putih'], ans: 0, exp: 'Bendera Indonesia berwarna Merah dan Putih.' },
+                    { q: 'Sebelum berangkat ke sekolah, sebaiknya kita ... kepada orang tua.', opts: ['Berteriak', 'Berpamitan', 'Marah', 'Bersembunyi'], ans: 1, exp: 'Berpamitan adalah sikap sopan kepada orang tua.' },
+                    { q: 'Lambang negara Indonesia adalah...', opts: ['Harimau', 'Garuda Pancasila', 'Komodo', 'Elang Jawa'], ans: 1, exp: 'Lambang negara kita adalah Garuda Pancasila.' },
+                    { q: 'Jika teman terjatuh saat bermain, sikap kita sebaiknya...', opts: ['Menertawakan', 'Menolongnya', 'Membiarkan', 'Meninggalkan'], ans: 1, exp: 'Menolong teman adalah perbuatan terpuji.' }
+                ],
+                'Koding': [
+                    { q: 'Urutan langkah menyikat gigi yang benar dimulai dari...', opts: ['Berkumur lalu tidur', 'Mengambil sikat & pasta gigi', 'Menyimpan sikat', 'Makan nasi'], ans: 1, exp: 'Algoritma selalu dimulai dari persiapan alat: mengambil sikat & pasta gigi.' },
+                    { q: 'Perintah "MAJU 2 LANGKAH" artinya robot bergerak ke...', opts: ['Belakang', 'Depan 2 kotak', 'Samping', 'Diam'], ans: 1, exp: 'Maju berarti melangkah lurus ke depan.' },
+                    { q: 'Lampu lalu lintas berwarna MERAH memberi perintah untuk...', opts: ['Jalan terus', 'Berhenti', 'Lari cepat', 'Belok'], ans: 1, exp: 'Dalam aturan simbol, merah berarti berhenti.' },
+                    { q: 'Lanjutkan pola bentuk berikut: 🔵 🔴 🔵 🔴 ...', opts: ['🔴', '🔵', '🟢', '🟡'], ans: 1, exp: 'Polanya bergantian biru-merah, jadi setelah merah adalah biru.' },
+                    { q: 'Kumpulan langkah berurutan untuk menyelesaikan tugas disebut...', opts: ['Algoritma', 'Baterai', 'Layar', 'Kabel'], ans: 0, exp: 'Algoritma adalah urutan langkah penyelesaian masalah.' }
+                ],
+                'AI': [
+                    { q: 'Contoh alat pintar di rumah yang bisa menjawab pertanyaan suara adalah...', opts: ['Sapu lidi', 'Asisten suara pintar', 'Ember air', 'Pensil kayu'], ans: 1, exp: 'Asisten suara pintar menggunakan AI untuk memahami ucapan.' },
+                    { q: 'Robot penyedot debu bisa membersihkan lantai tanpa menabrak tembok karena punya...', opts: ['Sensor', 'Sayap', 'Roda gigi kayu', 'Kertas'], ans: 0, exp: 'Sensor membantu robot mendeteksi benda di depannya.' },
+                    { q: 'Kamera HP bisa mengenali wajah pemiliknya menggunakan teknologi...', opts: ['Kecerdasan Artifisial (AI)', 'Mesin ketik', 'Kaca pembesar', 'Lampu senter'], ans: 0, exp: 'Pengenalan wajah adalah salah satu kemampuan AI.' },
+                    { q: 'AI adalah singkatan dari...', opts: ['Air Indah', 'Artificial Intelligence', 'Alat Ikan', 'Api Inti'], ans: 1, exp: 'AI berarti Artificial Intelligence atau Kecerdasan Artifisial.' },
+                    { q: 'Siapa yang menciptakan dan memprogram AI?', opts: ['Manusia', 'Batu', 'Pohon', 'Awan'], ans: 0, exp: 'AI dibuat oleh manusia untuk membantu pekerjaan.' }
+                ]
+            },
+
+            // ======================== KELAS 2 (30 SOAL) ========================
+            2: {
+                'Matematika': [
+                    { q: '3 × 4 = ...', opts: ['7', '10', '12', '15'], ans: 2, exp: '3 × 4 artinya 4 + 4 + 4 = 12.' },
+                    { q: 'Angka 2 pada bilangan 245 menempati nilai tempat...', opts: ['Satuan', 'Puluhan', 'Ratusan', 'Ribuan'], ans: 2, exp: '245 terdiri dari 2 ratusan, 4 puluhan, 5 satuan.' },
+                    { q: '25 + 18 = ...', opts: ['33', '43', '45', '35'], ans: 1, exp: '25 + 18 = 43.' },
+                    { q: '1 jam sama dengan ... menit.', opts: ['30', '45', '60', '100'], ans: 2, exp: '1 jam terdiri dari 60 menit.' },
+                    { q: 'Panjang pita 2 meter sama dengan ... sentimeter (cm).', opts: ['20 cm', '200 cm', '2.000 cm', '2 cm'], ans: 1, exp: '1 meter = 100 cm, maka 2 meter = 200 cm.' }
+                ],
+                'IPAS': [
+                    { q: 'Air yang dimasukkan ke dalam freezer akan berubah menjadi es batu. Peristiwa ini disebut...', opts: ['Mencair', 'Membeku', 'Menguap', 'Menyublim'], ans: 1, exp: 'Perubahan benda cair menjadi padat disebut membeku.' },
+                    { q: 'Contoh benda berwujud GAS adalah...', opts: ['Batu', 'Minyak goreng', 'Udara dalam balon', 'Kayu'], ans: 2, exp: 'Udara di dalam balon adalah benda gas.' },
+                    { q: 'Katak dapat hidup di dua alam, yaitu di air dan di...', opts: ['Udara', 'Darat', 'Awan', 'Api'], ans: 1, exp: 'Katak adalah hewan amfibi yang hidup di air dan darat.' },
+                    { q: 'Tumbuhan hijau membutuhkan ... untuk membuat makanannya.', opts: ['Sinar matahari', 'Plastik', 'Besi', 'Kertas'], ans: 0, exp: 'Sinar matahari dibutuhkan tumbuhan untuk berfotosintesis.' },
+                    { q: 'Membuang sampah ke sungai dapat menyebabkan bencana...', opts: ['Gempa bumi', 'Banjir', 'Gunung meletus', 'Kekeringan'], ans: 1, exp: 'Sampah menyumbat aliran sungai sehingga menimbulkan banjir.' }
+                ],
+                'Bahasa Indonesia': [
+                    { q: 'Penulisan huruf kapital yang benar adalah...', opts: ['ani pergi ke bandung.', 'Ani pergi ke Bandung.', 'ani pergi ke Bandung.', 'Ani pergi ke bandung.'], ans: 1, exp: 'Huruf kapital dipakai di awal kalimat, nama orang (Ani), dan nama kota (Bandung).' },
+                    { q: 'Tanda baca di akhir kalimat tanya adalah...', opts: ['Tanda titik (.)', 'Tanda tanya (?)', 'Tanda koma (,)', 'Tanda seru (!)'], ans: 1, exp: 'Kalimat tanya selalu diakhiri tanda tanya (?).' },
+                    { q: "Lawan kata dari 'rajin' adalah...", opts: ['Pintar', 'Malas', 'Cepat', 'Giat'], ans: 1, exp: 'Lawan kata rajin adalah malas.' },
+                    { q: 'Kata tanya untuk menanyakan tempat adalah...', opts: ['Siapa', 'Di mana', 'Kapan', 'Berapa'], ans: 1, exp: "'Di mana' digunakan untuk menanyakan lokasi atau tempat." },
+                    { q: 'Tempat meminjam dan membaca banyak buku di sekolah adalah...', opts: ['Kantin', 'Perpustakaan', 'UKS', 'Lapangan'], ans: 1, exp: 'Perpustakaan menyediakan berbagai koleksi buku bacaan.' }
+                ],
+                'PKN': [
+                    { q: 'Simbol sila kedua Pancasila (Kemanusiaan yang Adil dan Beradab) adalah...', opts: ['Bintang', 'Rantai Emas', 'Kepala Banteng', 'Pohon Beringin'], ans: 1, exp: 'Sila kedua bersimbol Rantai Emas.' },
+                    { q: 'Membersihkan kelas bersama-sama teman disebut...', opts: ['Bertengkar', 'Piket kelas / Gotong royong', 'Bermain', 'Berlomba'], ans: 1, exp: 'Piket kelas adalah wujud gotong royong menjaga kebersihan.' },
+                    { q: 'Meskipun berbeda suku dan agama, kita harus tetap hidup...', opts: ['Bermusuhan', 'Rukun', 'Terpisah', 'Sombong'], ans: 1, exp: 'Hidup rukun menciptakan kedamaian.' },
+                    { q: 'Contoh tata tertib di sekolah adalah...', opts: ['Datang terlambat', 'Memakai seragam rapi', 'Membuang sampah sembarangan', 'Tidur di kelas'], ans: 1, exp: 'Memakai seragam rapi adalah bagian dari tata tertib sekolah.' },
+                    { q: 'Bunyi sila ketiga Pancasila adalah...', opts: ['Ketuhanan Yang Maha Esa', 'Persatuan Indonesia', 'Keadilan Sosial', 'Kerakyatan'], ans: 1, exp: 'Sila ketiga berbunyi Persatuan Indonesia.' }
+                ],
+                'Koding': [
+                    { q: 'Robot menghadap Utara. Jika diberi perintah "BELOK KANAN", robot menghadap ke...', opts: ['Barat', 'Timur', 'Selatan', 'Utara'], ans: 1, exp: 'Dari Utara belok kanan menghadap ke Timur.' },
+                    { q: 'Perintah "ULANGI 3 KALI: LOMPAT" akan membuat karakter melompat sebanyak...', opts: ['1 kali', '3 kali', '6 kali', '0 kali'], ans: 1, exp: 'Perintah ulangi 3 kali menjalankan aksi sebanyak 3 kali.' },
+                    { q: 'Kesalahan urutan langkah dalam program komputer disebut...', opts: ['Bug', 'Mouse', 'Monitor', 'Speaker'], ans: 0, exp: 'Kesalahan dalam kode program disebut Bug.' },
+                    { q: 'Urutan membuat teh manis: (1) Tuang air panas, (2) Masukkan teh & gula, (3) Aduk, (4) ...', opts: ['Buang gelasnya', 'Teh siap diminum', 'Masukkan es batu ke teko', 'Matikan lampu'], ans: 1, exp: 'Langkah terakhir adalah hasil akhir: teh siap diminum.' },
+                    { q: 'Angka selanjutnya pada pola: 2, 4, 6, 8, ... adalah...', opts: ['9', '10', '11', '12'], ans: 1, exp: 'Pola bilangan genap bertambah 2 setiap langkah: 8 + 2 = 10.' }
+                ],
+                'AI': [
+                    { q: 'Aplikasi peta digital dapat menunjukkan jalan tercepat tanpa macet dengan bantuan...', opts: ['AI dan data lalu lintas', 'Kompas kayu', 'Buku gambar', 'Penggaris'], ans: 0, exp: 'AI menganalisis data lalu lintas untuk mencari rute tercepat.' },
+                    { q: 'Agar AI bisa membedakan gambar kucing dan anjing, AI perlu diberi banyak...', opts: ['Contoh gambar (Data)', 'Air minum', 'Batu baterai', 'Kertas kosong'], ans: 0, exp: 'AI belajar mengenali pola dari banyak contoh data.' },
+                    { q: 'Alat yang berfungsi sebagai "telinga" komputer untuk mendengar perintah suara adalah...', opts: ['Monitor', 'Mikrofon', 'Printer', 'Keyboard'], ans: 1, exp: 'Mikrofon menangkap input suara.' },
+                    { q: 'Fitur penerjemah bahasa otomatis membantu kita memahami bahasa...', opts: ['Asing / negara lain', 'Batu', 'Tumbuhan', 'Awan'], ans: 0, exp: 'AI penerjemah menerjemahkan antar bahasa manusia.' },
+                    { q: 'Apakah AI punya perasaan sedih dan gembira seperti manusia?', opts: ['Ya, sama persis', 'Tidak, AI hanya program komputer', 'Kadang menangis', 'Punya hati'], ans: 1, exp: 'AI adalah sistem komputer cerdas, tidak memiliki perasaan alami.' }
+                ]
+            },
+
+            // ======================== KELAS 3 (30 SOAL) ========================
+            3: {
+                'Matematika': [
+                    { q: '36 ÷ 4 = ...', opts: ['7', '8', '9', '10'], ans: 2, exp: '4 × 9 = 36, jadi 36 ÷ 4 = 9.' },
+                    { q: 'Sebuah pizza dipotong 4 bagian sama besar. 1 potong pizza bernilai pecahan...', opts: ['1/2', '1/3', '1/4', '4/1'], ans: 2, exp: '1 bagian dari 4 potongan sama besar ditulis 1/4.' },
+                    { q: 'Persegi memiliki panjang sisi 7 cm. Keliling persegi tersebut adalah...', opts: ['14 cm', '21 cm', '28 cm', '49 cm'], ans: 2, exp: 'Keliling persegi = 4 × sisi = 4 × 7 = 28 cm.' },
+                    { q: '125 × 4 = ...', opts: ['400', '450', '500', '550'], ans: 2, exp: '125 × 4 = 500.' },
+                    { q: '3 kilogram (kg) sama dengan ... gram.', opts: ['30 gram', '300 gram', '3.000 gram', '30.000 gram'], ans: 2, exp: '1 kg = 1.000 gram, maka 3 kg = 3.000 gram.' }
+                ],
+                'IPAS': [
+                    { q: 'Urutan metamorfosis sempurna pada kupu-kupu adalah...', opts: ['Telur → Ulat → Kepompong → Kupu-kupu', 'Telur → Kepompong → Ulat → Kupu-kupu', 'Ulat → Telur → Kupu-kupu → Kepompong', 'Telur → Berudu → Kupu-kupu'], ans: 0, exp: 'Metamorfosis kupu-kupu: Telur → Larva (ulat) → Pupa (kepompong) → Kupu-kupu.' },
+                    { q: 'Sumber energi panas terbesar bagi bumi adalah...', opts: ['Bulan', 'Matahari', 'Api unggun', 'Lampu'], ans: 1, exp: 'Matahari adalah sumber energi panas dan cahaya utama di bumi.' },
+                    { q: 'Hewan pemakan daging disebut...', opts: ['Herbivora', 'Karnivora', 'Omnivora', 'Insektivora'], ans: 1, exp: 'Karnivora adalah kelompok hewan pemakan daging seperti singa dan elang.' },
+                    { q: 'Perubahan wujud air menjadi uap air saat dipanaskan disebut...', opts: ['Membeku', 'Mencair', 'Menguap', 'Mengembun'], ans: 2, exp: 'Cair menjadi gas disebut menguap.' },
+                    { q: 'Tulang-tulang yang tersusun rapi di dalam tubuh manusia disebut...', opts: ['Otot', 'Rangka', 'Kulit', 'Darah'], ans: 1, exp: 'Rangka menopang tubuh dan melindungi organ dalam.' }
+                ],
+                'Bahasa Indonesia': [
+                    { q: 'Sinonim (persamaan kata) dari kata "cerdas" adalah...', opts: ['Bodoh', 'Pintar', 'Lambat', 'Malas'], ans: 1, exp: 'Cerdas bersinonim dengan pintar.' },
+                    { q: 'Kalimat utama yang berisi inti pembahasan dalam sebuah paragraf disebut...', opts: ['Ide pokok', 'Judul buku', 'Daftar isi', 'Catatan kaki'], ans: 0, exp: 'Ide pokok adalah gagasan utama dalam suatu paragraf.' },
+                    { q: 'Penulisan kalimat seru yang tepat adalah...', opts: ['Wah, indah sekali pemandangan ini!', 'Wah, indah sekali pemandangan ini?', 'Wah indah sekali pemandangan ini.', 'wah indah sekali!'], ans: 0, exp: 'Kalimat kekaguman diakhiri tanda seru (!).' },
+                    { q: 'Cerita rakyat yang tokohnya adalah hewan-hewan yang bisa berbicara disebut...', opts: ['Fabel', 'Legenda', 'Mitos', 'Biografi'], ans: 0, exp: 'Fabel adalah cerita fiksi dengan tokoh binatang, seperti Si Kancil.' },
+                    { q: 'Arti ungkapan "ringan tangan" adalah...', opts: ['Suka memukul', 'Suka menolong', 'Tangannya kecil', 'Malas bekerja'], ans: 1, exp: 'Ringan tangan berarti suka membantu atau menolong orang lain.' }
+                ],
+                'PKN': [
+                    { q: 'Semboyan bangsa Indonesia "Bhinneka Tunggal Ika" artinya...', opts: ['Bersatu kita teguh', 'Berbeda-beda tetapi tetap satu jua', 'Maju terus pantang mundur', 'Sekali merdeka tetap merdeka'], ans: 1, exp: 'Bhinneka Tunggal Ika berarti berbeda-beda tetapi tetap satu jua.' },
+                    { q: 'Mendapatkan kasih sayang dan pendidikan dari orang tua merupakan ... anak.', opts: ['Kewajiban', 'Hak', 'Hukuman', 'Larangan'], ans: 1, exp: 'Kasih sayang dan pendidikan adalah hak setiap anak.' },
+                    { q: 'Simbol sila keempat Pancasila adalah...', opts: ['Pohon Beringin', 'Kepala Banteng', 'Rantai', 'Padi dan Kapas'], ans: 1, exp: 'Sila keempat bersimbol Kepala Banteng.' },
+                    { q: 'Menghormati teman yang sedang beribadah sesuai agamanya merupakan pengamalan sila ke-...', opts: ['1', '2', '3', '5'], ans: 0, exp: 'Toleransi beragama sesuai dengan sila pertama Pancasila.' },
+                    { q: 'Jika ada perbedaan pendapat saat diskusi kelompok, sebaiknya diselesaikan dengan cara...', opts: ['Marah-marah', 'Musyawarah', 'Bertengkar', 'Keluar kelas'], ans: 1, exp: 'Musyawarah adalah cara terbaik mencapai kesepakatan bersama.' }
+                ],
+                'Koding': [
+                    { q: 'Proses mencari dan memperbaiki kesalahan dalam kode program disebut...', opts: ['Debugging', 'Printing', 'Typing', 'Saving'], ans: 0, exp: 'Debugging adalah kegiatan menemukan dan memperbaiki bug/kesalahan kode.' },
+                    { q: 'Blok kode "ULANGI 4 KALI { MAJU; BELOK KANAN; }" akan membentuk lintasan berbentuk...', opts: ['Segitiga', 'Persegi', 'Lingkaran', 'Garis lurus'], ans: 1, exp: '4 sisi sama panjang dengan belok 90 derajat membentuk persegi.' },
+                    { q: 'Manakah yang merupakan input (masukan) pada komputer?', opts: ['Menekan tombol Keyboard', 'Suara dari Speaker', 'Gambar di Monitor', 'Kertas dari Printer'], ans: 0, exp: 'Keyboard mengirimkan perintah masukan ke komputer.' },
+                    { q: 'Jika Skor = 10, lalu dijalankan perintah "UBAH SKOR SEBESAR +5", maka Skor menjadi...', opts: ['5', '10', '15', '50'], ans: 2, exp: '10 ditambah 5 sama dengan 15.' },
+                    { q: 'Agar karakter tidak menabrak tembok di game, programmer menggunakan blok...', opts: ['Sensor tabrakan (Collision)', 'Suara musik', 'Warna langit', 'Ukuran font'], ans: 0, exp: 'Deteksi tabrakan (collision) mencegah karakter menembus dinding.' }
+                ],
+                'AI': [
+                    { q: 'Bagaimana cara platform video edukasi menyarankan video yang kamu sukai?', opts: ['AI mempelajari riwayat tontonanmu', 'Ditebak secara acak', 'Ditulis manual satu per satu', 'Menggunakan kalkulator'], ans: 0, exp: 'Sistem rekomendasi AI menganalisis pola video yang sering ditonton.' },
+                    { q: 'Apa yang terjadi jika AI dilatih menggunakan data gambar yang salah atau buram?', opts: ['Hasil tebakan AI menjadi kurang akurat', 'AI menjadi lebih pintar', 'Komputer berubah warna', 'Tidak berpengaruh'], ans: 0, exp: 'Kualitas data latih sangat menentukan ketepatan AI.' },
+                    { q: 'Contoh penerapan AI di bidang kesehatan adalah...', opts: ['Membantu dokter membaca hasil rontgen', 'Memasak nasi goreng', 'Mencuci baju', 'Menyiram bunga'], ans: 0, exp: 'AI medis membantu menganalisis citra rontgen secara cepat.' },
+                    { q: 'Teknologi mobil tanpa sopir (autonomous car) menggunakan AI untuk...', opts: ['Mendeteksi jalan, rambu, dan pejalan kaki', 'Mengisi bensin sendiri', 'Mencuci kaca', 'Mengganti ban'], ans: 0, exp: 'AI memproses data kamera dan sensor untuk mengemudi dengan aman.' },
+                    { q: 'Data dalam AI bisa berupa...', opts: ['Teks, gambar, suara, dan angka', 'Hanya batu', 'Hanya air', 'Hanya udara'], ans: 0, exp: 'AI dapat memproses berbagai jenis data digital.' }
+                ]
+            },
+
+            // ======================== KELAS 4 (30 SOAL) ========================
+            4: {
+                'Matematika': [
+                    { q: 'FPB (Faktor Persekutuan Terbesar) dari 12 dan 18 adalah...', opts: ['3', '6', '9', '36'], ans: 1, exp: 'Faktor 12: 1,2,3,4,6,12. Faktor 18: 1,2,3,6,9,18. FPB = 6.' },
+                    { q: 'KPK (Kelipatan Persekutuan Terkecil) dari 4 dan 6 adalah...', opts: ['8', '12', '18', '24'], ans: 1, exp: 'Kelipatan 4: 4,8,12... Kelipatan 6: 6,12... KPK = 12.' },
+                    { q: 'Pecahan yang senilai dengan 2/3 adalah...', opts: ['3/4', '4/6', '4/5', '6/8'], ans: 1, exp: '2/3 dikali 2/2 menjadi 4/6.' },
+                    { q: 'Besar sudut siku-siku adalah...', opts: ['45°', '90°', '180°', '360°'], ans: 1, exp: 'Sudut siku-siku memiliki besar tepat 90 derajat.' },
+                    { q: 'Luas persegi panjang dengan panjang 14 cm dan lebar 6 cm adalah...', opts: ['20 cm²', '40 cm²', '84 cm²', '48 cm²'], ans: 2, exp: 'Luas = panjang × lebar = 14 × 6 = 84 cm².' }
+                ],
+                'IPAS': [
+                    { q: 'Gaya yang menyebabkan buah mangga jatuh ke bawah menuju tanah adalah...', opts: ['Gaya magnet', 'Gaya gravitasi bumi', 'Gaya pegas', 'Gaya listrik'], ans: 1, exp: 'Gaya gravitasi bumi menarik semua benda menuju pusat bumi.' },
+                    { q: 'Bagian bunga yang berfungsi sebagai alat kelamin jantan adalah...', opts: ['Putik', 'Benang sari', 'Kelopak', 'Mahkota'], ans: 1, exp: 'Benang sari menghasilkan serbuk sari (sel kelamin jantan).' },
+                    { q: 'Perubahan energi yang terjadi pada setrika listrik adalah...', opts: ['Listrik menjadi gerak', 'Listrik menjadi panas', 'Panas menjadi bunyi', 'Gerak menjadi cahaya'], ans: 1, exp: 'Setrika mengubah energi listrik menjadi energi panas.' },
+                    { q: 'Sumber daya alam yang dapat diperbarui adalah...', opts: ['Batu bara', 'Minyak bumi', 'Air dan tumbuhan', 'Emas'], ans: 2, exp: 'Air dan tumbuhan dapat terus diperbarui oleh siklus alam.' },
+                    { q: 'Sifat magnet yang memiliki dua kutub sama (misal Utara bertemu Utara) akan...', opts: ['Tarik-menarik', 'Tolak-menolak', 'Menempel kuat', 'Meleleh'], ans: 1, exp: 'Kutub magnet yang senama akan saling tolak-menolak.' }
+                ],
+                'Bahasa Indonesia': [
+                    { q: 'Kalimat yang memerlukan objek disebut kalimat...', opts: ['Intransitif', 'Transitif', 'Tanya', 'Perintah'], ans: 1, exp: 'Kalimat transitif memiliki pola S-P-O (memerlukan objek), contoh: Budi membaca buku.' },
+                    { q: 'Kata dasar dari "menyapu" adalah...', opts: ['Nyapu', 'Sapu', 'Menya', 'Apu'], ans: 1, exp: 'Awalan me- + sapu mengalami peluluhan menjadi menyapu.' },
+                    { q: 'Orang yang memberikan informasi dalam kegiatan wawancara disebut...', opts: ['Pewawancara', 'Narasumber', 'Penulis', 'Pembaca'], ans: 1, exp: 'Narasumber adalah pihak yang diwawancarai untuk dimintai keterangan.' },
+                    { q: 'Gagasan yang menjelaskan ide pokok dalam suatu paragraf disebut...', opts: ['Gagasan pendukung', 'Judul', 'Kesimpulan', 'Amanat'], ans: 0, exp: 'Gagasan pendukung menguraikan informasi tambahan dari ide pokok.' },
+                    { q: 'Simbol petunjuk arah pada denah biasanya menunjukkan arah...', opts: ['Utara', 'Bawah', 'Tengah', 'Samping'], ans: 0, exp: 'Panah kompas pada denah selalu menunjuk ke arah Utara.' }
+                ],
+                'PKN': [
+                    { q: 'Rumah adat "Tongkonan" berasal dari provinsi...', opts: ['Sumatera Barat', 'Sulawesi Selatan', 'Jawa Tengah', 'Papua'], ans: 1, exp: 'Tongkonan adalah rumah adat masyarakat Toraja, Sulawesi Selatan.' },
+                    { q: 'Salah satu manfaat gotong royong di lingkungan masyarakat adalah...', opts: ['Pekerjaan berat menjadi ringan', 'Menambah biaya', 'Membuat warga bertengkar', 'Memperlambat pekerjaan'], ans: 0, exp: 'Gotong royong mempererat persaudaraan dan meringankan pekerjaan.' },
+                    { q: 'Lembaga pemerintahan yang memimpin sebuah desa disebut...', opts: ['Gubernur', 'Bupati', 'Kepala Desa', 'Camat'], ans: 2, exp: 'Kepala Desa memimpin penyelenggaraan pemerintahan di tingkat desa.' },
+                    { q: 'Sikap yang tepat terhadap teman yang memiliki tarian daerah berbeda adalah...', opts: ['Mengejeknya', 'Menghargai dan ikut mempelajarinya', 'Melarangnya tampil', 'Acuh tak acuh'], ans: 1, exp: 'Menghargai budaya daerah lain memperkuat persatuan bangsa.' },
+                    { q: 'Sila kelima Pancasila dilambangkan dengan gambar...', opts: ['Rantai', 'Pohon Beringin', 'Padi dan Kapas', 'Kepala Banteng'], ans: 2, exp: 'Padi dan Kapas melambangkan pangan dan sandang untuk keadilan sosial.' }
+                ],
+                'Koding': [
+                    { q: 'Perhatikan logika berikut: JIKA (Nyawa == 0) MAKA (Game Over). Jika Nyawa = 2, apa yang terjadi?', opts: ['Game Over', 'Permainan tetap lanjut', 'Skor hilang', 'Layar mati'], ans: 1, exp: 'Karena kondisi Nyawa == 0 bernilai Salah (False), maka permainan tetap lanjut.' },
+                    { q: 'Dalam pemrograman blok (seperti Scratch), tempat menyimpan nilai skor disebut...', opts: ['Variabel', 'Kostum', 'Latar', 'Suara'], ans: 0, exp: 'Variabel adalah wadah penyimpanan data yang nilainya bisa berubah.' },
+                    { q: 'Koordinat X pada layar game 2D mengatur posisi karakter secara...', opts: ['Horizontal (Kiri - Kanan)', 'Vertikal (Atas - Bawah)', 'Putaran', 'Ukuran'], ans: 0, exp: 'Sumbu X mengatur posisi mendatar (kiri dan kanan).' },
+                    { q: 'Mengapa programmer menggunakan perulangan (Loop) daripada menulis perintah yang sama 50 kali?', opts: ['Kode lebih singkat, rapi, dan mudah diperbaiki', 'Agar komputer cepat panas', 'Agar file lebih besar', 'Karena tidak ada tombol copy'], ans: 0, exp: 'Loop menghemat penulisan kode yang berulang.' },
+                    { q: 'Event "KETIKA BENDERA HIJAU DIKLIK" berfungsi untuk...', opts: ['Memulai jalannya program', 'Menghapus game', 'Mematikan layar', 'Menutup browser'], ans: 0, exp: 'Event tersebut menjadi pemicu awal berjalannya script.' }
+                ],
+                'AI': [
+                    { q: 'Tahap melatih model AI menggunakan ribuan contoh data disebut...', opts: ['Training (Pelatihan)', 'Printing', 'Sleeping', 'Charging'], ans: 0, exp: 'Training adalah proses AI belajar menemukan pola dari dataset.' },
+                    { q: 'Jika kita hanya melatih AI dengan gambar apel merah, apa yang terjadi saat AI melihat apel hijau?', opts: ['AI mungkin gagal mengenalinya sebagai apel', 'AI langsung tahu semua buah', 'AI berubah menjadi hijau', 'Tidak ada masalah'], ans: 0, exp: 'Data latih yang kurang beragam menyebabkan bias pada AI.' },
+                    { q: 'Chatbot edukasi dapat menjawab pertanyaan siswa menggunakan teknologi...', opts: ['Natural Language Processing (NLP)', 'Mesin uap', 'Lampu pijar', 'Kipas angin'], ans: 0, exp: 'NLP memungkinkan AI memahami dan merespons bahasa manusia.' },
+                    { q: 'Manakah contoh penggunaan AI yang baik untuk pelajar SD?', opts: ['Berlatih soal matematika & pelafalan bahasa', 'Menyuruh AI mengerjakan seluruh PR tanpa dibaca', 'Membuat berita bohong', 'Meniru suara teman untuk menipu'], ans: 0, exp: 'AI paling bermanfaat sebagai teman belajar interaktif.' },
+                    { q: 'Sensor kamera pada robot pengantar barang berfungsi sebagai...', opts: ['Computer Vision (Penglihatan Komputer)', 'Pengeras suara', 'Baterai cadangan', 'Roda penggerak'], ans: 0, exp: 'Computer Vision membuat komputer mampu memahami gambar/video.' }
+                ]
+            },
+
+            // ======================== KELAS 5 (30 SOAL) ========================
+            5: {
+                'Matematika': [
+                    { q: 'Hasil dari 1/2 + 1/4 adalah...', opts: ['2/6', '3/4', '2/4', '1/6'], ans: 1, exp: '1/2 = 2/4, maka 2/4 + 1/4 = 3/4.' },
+                    { q: 'Sebuah mobil melaju dengan kecepatan 60 km/jam selama 2,5 jam. Jarak yang ditempuh adalah...', opts: ['120 km', '150 km', '180 km', '140 km'], ans: 1, exp: 'Jarak = Kecepatan × Waktu = 60 × 2,5 = 150 km.' },
+                    { q: 'Volume balok dengan panjang 10 cm, lebar 5 cm, dan tinggi 4 cm adalah...', opts: ['19 cm³', '100 cm³', '200 cm³', '400 cm³'], ans: 2, exp: 'Volume balok = p × l × t = 10 × 5 × 4 = 200 cm³.' },
+                    { q: 'Bentuk desimal dari pecahan 3/5 adalah...', opts: ['0,3', '0,5', '0,6', '0,75'], ans: 2, exp: '3/5 = 6/10 = 0,6.' },
+                    { q: '25% dari 200 adalah...', opts: ['25', '40', '50', '75'], ans: 2, exp: '25/100 × 200 = 50.' }
+                ],
+                'IPAS': [
+                    { q: 'Dalam rantai makanan: Padi → Tikus → Ular → Elang. Organisme yang berperan sebagai konsumen tingkat II adalah...', opts: ['Padi', 'Tikus', 'Ular', 'Elang'], ans: 2, exp: 'Padi (produsen), Tikus (konsumen I), Ular (konsumen II).' },
+                    { q: 'Organ pernapasan manusia tempat terjadinya pertukaran oksigen dan karbon dioksida adalah...', opts: ['Trakea', 'Alveolus di paru-paru', 'Kerongkongan', 'Lambung'], ans: 1, exp: 'Alveolus memiliki dinding tipis untuk pertukaran gas O₂ dan CO₂.' },
+                    { q: 'Pensil yang dimasukkan ke dalam gelas berisi air tampak patah karena sifat cahaya dapat...', opts: ['Dipantulkan', 'Dibiaskan', 'Diuraikan', 'Menembus benda bening'], ans: 1, exp: 'Pembiasan cahaya terjadi saat cahaya melewati dua medium berbeda kerapatan.' },
+                    { q: 'Hubungan antara ikan remora dan ikan hiu merupakan contoh simbiosis...', opts: ['Mutualisme', 'Komensalisme', 'Parasitisme', 'Kompetisi'], ans: 1, exp: 'Komensalisme: remora untung mendapat sisa makanan, hiu tidak dirugikan.' },
+                    { q: 'Proses penguapan air dari laut dan sungai akibat panas matahari dalam siklus air disebut...', opts: ['Kondensasi', 'Evaporasi', 'Presipitasi', 'Infiltrasi'], ans: 1, exp: 'Evaporasi adalah proses penguapan air menuju atmosfer.' }
+                ],
+                'Bahasa Indonesia': [
+                    { q: 'Majas yang mengumpamakan benda mati seolah-olah hidup seperti manusia disebut...', opts: ['Hiperbola', 'Personifikasi', 'Metafora', 'Simile'], ans: 1, exp: 'Contoh personifikasi: "Angin malam berbisik lembut di telingaku."' },
+                    { q: 'Ciri utama pantun adalah bersajak...', opts: ['a-a-a-a', 'a-b-a-b', 'a-a-b-b', 'a-b-b-a'], ans: 1, exp: 'Pantun terdiri dari 4 baris dengan rima akhir a-b-a-b.' },
+                    { q: 'Teks yang menjelaskan proses terjadinya fenomena alam atau sosial secara ilmiah disebut teks...', opts: ['Narasi', 'Eksplanasi', 'Puisi', 'Iklan'], ans: 1, exp: 'Teks eksplanasi menjelaskan sebab-akibat suatu fenomena.' },
+                    { q: 'Pesan moral yang ingin disampaikan pengarang kepada pembaca cerita disebut...', opts: ['Alur', 'Amanat', 'Latar', 'Watak'], ans: 1, exp: 'Amanat adalah pesan kebaikan di dalam cerita.' },
+                    { q: 'Sinonim dari kata "kontribusi" adalah...', opts: ['Hambatan', 'Sumbangan / peran serta', 'Kerugian', 'Larangan'], ans: 1, exp: 'Kontribusi berarti sumbangan atau keikutsertaan.' }
+                ],
+                'PKN': [
+                    { q: 'Pengambilan keputusan bersama yang mengutamakan kesepakatan seluruh anggota disebut...', opts: ['Voting', 'Musyawarah mufakat', 'Keputusan sepihak', 'Undian'], ans: 1, exp: 'Musyawarah mufakat sesuai dengan sila ke-4 Pancasila.' },
+                    { q: 'Kesadaran manusia akan tingkah laku atau perbuatan baik yang disengaja maupun tidak disebut...', opts: ['Tanggung jawab', 'Hak asasi', 'Kebebasan', 'Keinginan'], ans: 0, exp: 'Tanggung jawab adalah kesadaran menanggung akibat dari perbuatan.' },
+                    { q: 'Contoh tanggung jawab siswa di lingkungan sekolah adalah...', opts: ['Mengerjakan tugas dan menjaga fasilitas sekolah', 'Meminta uang jajan', 'Menonton TV', 'Bermain game saat pelajaran'], ans: 0, exp: 'Menjaga fasilitas dan belajar adalah tanggung jawab pelajar.' },
+                    { q: 'Peristiwa Sumpah Pemuda diperingati setiap tanggal...', opts: ['17 Agustus', '28 Oktober', '10 November', '1 Juni'], ans: 1, exp: 'Sumpah Pemuda diikrarkan pada 28 Oktober 1928.' },
+                    { q: 'Sikap menghargai perbedaan agama, ras, dan budaya disebut...', opts: ['Egoisme', 'Toleransi', 'Individualisme', 'Fanatisme'], ans: 1, exp: 'Toleransi menjaga keharmonisan dalam keberagaman.' }
+                ],
+                'Koding': [
+                    { q: 'Apa fungsi utama perulangan (Loop) dalam pemrograman?', opts: ['Menjalankan blok kode berulang kali secara otomatis', 'Menghapus semua variabel', 'Mematikan internet', 'Mengubah warna monitor'], ans: 0, exp: 'Loop mengeksekusi instruksi berulang sesuai jumlah atau kondisi tertentu.' },
+                    { q: 'Operator logika "AND" bernilai BENAR (True) jika...', opts: ['Kedua kondisi bernilai BENAR', 'Salah satu kondisi salah', 'Semua kondisi salah', 'Tidak ada kondisi'], ans: 0, exp: 'Pada logika AND, syarat 1 DAN syarat 2 harus sama-sama terpenuhi.' },
+                    { q: 'Dalam game EduBlox, jika Koin >= 100 MAKA Pemain naik level. Jika Koin = 100, apakah naik level?', opts: ['Ya, karena 100 lebih besar atau sama dengan 100', 'Tidak, harus 101', 'Skor menjadi 0', 'Game berhenti'], ans: 0, exp: 'Tanda >= berarti lebih besar ATAU sama dengan.' },
+                    { q: 'Struktur data yang menyimpan banyak item dalam satu daftar terurut disebut...', opts: ['List / Array', 'Integer', 'Boolean', 'Pixel'], ans: 0, exp: 'List/Array menyimpan kumpulan data dalam satu wadah.' },
+                    { q: 'Tipe data yang hanya memiliki dua nilai yaitu BENAR (True) atau SALAH (False) disebut...', opts: ['Boolean', 'String', 'Float', 'Audio'], ans: 0, exp: 'Boolean merepresentasikan logika True atau False.' }
+                ],
+                'AI': [
+                    { q: 'Mengapa kita tidak boleh langsung menyalin mentah-mentah jawaban dari AI tanpa memeriksanya?', opts: ['Karena AI bisa berhalusinasi (memberi informasi keliru)', 'Karena layar akan rusak', 'Karena AI selalu benar 100%', 'Karena tidak bisa di-copy'], ans: 0, exp: 'AI generatif kadang menghasilkan jawaban yang tampak meyakinkan namun keliru.' },
+                    { q: 'Apa yang dimaksud dengan "Dataset" dalam pembelajaran AI?', opts: ['Kumpulan data yang digunakan untuk melatih dan menguji AI', 'Jenis kabel jaringan', 'Baterai laptop', 'Nama merek robot'], ans: 0, exp: 'Dataset adalah bahan belajar utama bagi algoritma AI.' },
+                    { q: 'Fitur filter wajah lucu di kamera ponsel bekerja dengan cara mendeteksi...', opts: ['Titik-titik koordinat mata, hidung, dan mulut', 'Suhu ruangan', 'Kecepatan angin', 'Warna baju'], ans: 0, exp: 'AI face tracking memetakan landmark wajah secara real-time.' },
+                    { q: 'Data pribadi yang TIDAK boleh dibagikan sembarangan ke chatbot AI publik adalah...', opts: ['Alamat rumah lengkap dan kata sandi (password)', 'Pertanyaan rumus luas segitiga', 'Nama planet di tata surya', 'Arti peribahasa'], ans: 0, exp: 'Menjaga privasi data diri sangat penting dalam keamanan digital.' },
+                    { q: 'Kecerdasan AI yang mampu membuat gambar baru dari deskripsi teks disebut...', opts: ['Generative AI (AI Generatif)', 'Kalkulator saku', 'Jam digital', 'Termometer'], ans: 0, exp: 'Generative AI menghasilkan teks, gambar, atau audio baru.' }
+                ]
+            },
+
+            // ======================== KELAS 6 (30 SOAL) ========================
+            6: {
+                'Matematika': [
+                    { q: 'Volume kubus dengan panjang rusuk 5 cm adalah...', opts: ['25 cm³', '75 cm³', '125 cm³', '150 cm³'], ans: 2, exp: 'Volume kubus = s³ = 5 × 5 × 5 = 125 cm³.' },
+                    { q: 'Hasil dari -15 + 23 adalah...', opts: ['-8', '8', '38', '-38'], ans: 1, exp: '-15 + 23 = 23 - 15 = 8.' },
+                    { q: 'Luas lingkaran dengan jari-jari 7 cm (π = 22/7) adalah...', opts: ['44 cm²', '154 cm²', '308 cm²', '49 cm²'], ans: 1, exp: 'Luas = π × r² = 22/7 × 7 × 7 = 154 cm².' },
+                    { q: 'Nilai rata-rata (mean) dari data ulangan: 80, 90, 70, 80, 100 adalah...', opts: ['80', '84', '85', '88'], ans: 1, exp: 'Jumlah = 420, dibagi 5 data = 84.' },
+                    { q: 'Harga baju Rp120.000 mendapat diskon 20%. Harga yang harus dibayar adalah...', opts: ['Rp24.000', 'Rp96.000', 'Rp100.000', 'Rp108.000'], ans: 1, exp: 'Diskon = 20% × 120.000 = 24.000. Bayar = 120.000 - 24.000 = Rp96.000.' }
+                ],
+                'IPAS': [
+                    { q: 'Proses fotosintesis pada tumbuhan hijau menghasilkan...', opts: ['Karbon dioksida dan air', 'Glukosa (karbohidrat) dan oksigen', 'Nitrogen dan uap air', 'Garam mineral'], ans: 1, exp: 'Fotosintesis mengubah air + CO₂ + cahaya menjadi glukosa dan oksigen (O₂).' },
+                    { q: 'Planet terbesar dalam tata surya kita adalah...', opts: ['Saturnus', 'Jupiter', 'Uranus', 'Neptunus'], ans: 1, exp: 'Jupiter adalah planet terbesar di tata surya.' },
+                    { q: 'Akibat dari revolusi bumi mengelilingi matahari adalah...', opts: ['Terjadinya siang dan malam', 'Pergantian musim di belahan bumi', 'Gerak semu harian matahari', 'Perbedaan waktu WIB, WITA, WIT'], ans: 1, exp: 'Revolusi bumi menyebabkan pergantian musim.' },
+                    { q: 'Pada rangkaian listrik seri, jika salah satu lampu putus maka lampu lainnya akan...', opts: ['Tetap menyala terang', 'Ikut padam', 'Berkedip-kedip', 'Meledak'], ans: 1, exp: 'Rangkaian seri hanya punya satu jalur arus, jika terputus semua padam.' },
+                    { q: 'Perkembangbiakan tumbuhan tanpa melalui perkawinan (penyerbukan) disebut...', opts: ['Generatif', 'Vegetatif', 'Metamorfosis', 'Adaptasi'], ans: 1, exp: 'Vegetatif adalah perkembangbiakan tak kawin, misalnya cangkok dan stek.' }
+                ],
+                'Bahasa Indonesia': [
+                    { q: 'Kalimat efektif adalah kalimat yang...', opts: ['Sangat panjang dan berulang-ulang', 'Sesuai kaidah bahasa, jelas, hemat kata, dan mudah dipahami', 'Menggunakan banyak bahasa asing', 'Tidak memiliki subjek'], ans: 1, exp: 'Kalimat efektif menyampaikan gagasan secara tepat, singkat, dan jelas.' },
+                    { q: 'Manakah penulisan kata baku yang benar menurut KBBI?', opts: ['Apotik dan Nafas', 'Apotek dan Napas', 'Aktifitas dan Ijin', 'Praktek dan Resiko'], ans: 1, exp: 'Bentuk baku dalam KBBI adalah Apotek, Napas, Aktivitas, Izin, Praktik, Risiko.' },
+                    { q: 'Bagian paling atas pada surat resmi yang berisi nama dan alamat instansi disebut...', opts: ['Salam pembuka', 'Kop surat (kepala surat)', 'Tembusan', 'Lampiran'], ans: 1, exp: 'Kop surat memuat identitas resmi lembaga pengirim surat.' },
+                    { q: 'Pidato yang bertujuan mengajak atau memengaruhi pendengar melakukan kebaikan disebut pidato...', opts: ['Persuasif', 'Laporan', 'Sambutan', 'Perpisahan'], ans: 0, exp: 'Pidato persuasif bersifat mengajak pendengar.' },
+                    { q: 'Arti peribahasa "Bagai air di daun talas" adalah...', opts: ['Orang yang pendiriannya selalu berubah-ubah', 'Persaudaraan yang sangat erat', 'Bekerja keras tanpa lelah', 'Ilmu yang sangat luas'], ans: 0, exp: 'Air di daun talas mudah bergulir ke sana kemari, melambangkan pendirian tidak tetap.' }
+                ],
+                'PKN': [
+                    { q: 'Contoh kewajiban warga negara Indonesia berdasarkan UUD 1945 adalah...', opts: ['Membayar pajak dan menaati hukum', 'Mendapat pekerjaan layak', 'Memeluk agama masing-masing', 'Mengeluarkan pendapat'], ans: 0, exp: 'Membayar pajak dan menaati hukum adalah kewajiban setiap warga negara.' },
+                    { q: 'Organisasi kerja sama negara-negara di kawasan Asia Tenggara disebut...', opts: ['PBB', 'ASEAN', 'APEC', 'OPEC'], ans: 1, exp: 'ASEAN adalah perhimpunan bangsa-bangsa Asia Tenggara (Indonesia salah satu pendirinya).' },
+                    { q: 'Nilai utama yang terkandung dalam sila kedua Pancasila adalah menjunjung tinggi...', opts: ['Harkat, martabat, dan hak asasi manusia', 'Kekuasaan mutlak', 'Persaingan bebas', 'Kepentingan pribadi'], ans: 0, exp: 'Sila kedua menekankan kemanusiaan yang adil dan beradab.' },
+                    { q: 'Cinta terhadap produk dalam negeri Indonesia merupakan wujud sikap...', opts: ['Nasionalisme / Patriotisme', 'Konsumerisme', 'Chauvinisme', 'Individualisme'], ans: 0, exp: 'Bangga memakai produk buatan Indonesia menunjukkan cinta tanah air.' },
+                    { q: 'Dasar negara Republik Indonesia adalah...', opts: ['Pancasila', 'Bhinneka Tunggal Ika', 'Burung Garuda', 'Sumpah Pemuda'], ans: 0, exp: 'Pancasila adalah dasar negara Indonesia.' }
+                ],
+                'Koding': [
+                    { q: 'Apa fungsi perulangan (Loop) dalam pembuatan program?', opts: ['Menjalankan serangkaian instruksi berulang kali secara efisien', 'Menghentikan program secara paksa', 'Menghapus memori RAM', 'Mengubah perangkat keras'], ans: 0, exp: 'Perulangan (for/while loop) mengotomatiskan tugas yang berulang.' },
+                    { q: 'Kumpulan blok kode yang diberi nama tertentu agar bisa dipanggil berkali-kali di berbagai bagian program disebut...', opts: ['Function (Fungsi)', 'Komentar', 'Pixel', 'Cursor'], ans: 0, exp: 'Fungsi (Function) membuat kode modular dan dapat digunakan ulang.' },
+                    { q: 'Perhatikan kode: x = 4; x = x * 3 + 2; Berapa nilai akhir variabel x?', opts: ['14', '20', '9', '12'], ans: 0, exp: 'x = (4 × 3) + 2 = 12 + 2 = 14.' },
+                    { q: 'Struktur percabangan bersarang digunakan ketika...', opts: ['Ada pemeriksaan kondisi di dalam kondisi lainnya', 'Program tidak punya kondisi', 'Hanya mencetak satu teks', 'Komputer dimatikan'], ans: 0, exp: 'Nested If memeriksa syarat lanjutan setelah syarat pertama terpenuhi.' },
+                    { q: 'Simbol belah ketupat pada diagram alir (Flowchart) melambangkan...', opts: ['Keputusan / Percabangan kondisi (Ya/Tidak)', 'Mulai / Selesai', 'Proses hitung', 'Input data'], ans: 0, exp: 'Belah ketupat (Decision) menunjukkan pengambilan keputusan logika.' }
+                ],
+                'AI': [
+                    { q: 'Apa itu Machine Learning (Pembelajaran Mesin)?', opts: ['Cabang AI yang membuat komputer belajar dari pola data tanpa diprogram satu per satu', 'Mesin pembuat suku cadang motor', 'Alat pencetak dokumen 3D', 'Baterai bertenaga surya'], ans: 0, exp: 'Machine Learning melatih algoritma mengenali pola dan membuat prediksi dari data.' },
+                    { q: 'Jenis Machine Learning di mana AI belajar menggunakan data yang sudah diberi label jawaban yang benar disebut...', opts: ['Supervised Learning', 'Unsupervised Learning', 'Random Guessing', 'Manual Coding'], ans: 0, exp: 'Supervised Learning menggunakan data berlabel (misal: foto kucing berlabel "Kucing").' },
+                    { q: 'Apa yang dimaksud dengan "Bias AI"?', opts: ['Ketidakadilan atau kesalahan prediksi AI akibat data latih yang tidak seimbang', 'Kecepatan prosesor AI', 'Warna tampilan aplikasi AI', 'Harga langganan AI'], ans: 0, exp: 'Jika data latih berat sebelah, keputusan AI juga akan tidak adil (bias).' },
+                    { q: 'Perbedaan utama antara program komputer biasa dan AI adalah...', opts: ['AI mampu beradaptasi dan belajar dari data baru', 'Program biasa tidak pakai listrik', 'AI tidak butuh kode sama sekali', 'Program biasa selalu lebih pintar'], ans: 0, exp: 'Program tradisional mengikuti aturan kaku, sedangkan AI belajar dari pengalaman/data.' },
+                    { q: 'Dalam bidang lingkungan hidup, AI dapat dimanfaatkan untuk...', opts: ['Memprediksi cuaca ekstrem dan mendeteksi kebakaran hutan lewat citra satelit', 'Menebang pohon lebih cepat', 'Membuat sampah plastik', 'Mencemari sungai'], ans: 0, exp: 'AI membantu pemantauan iklim dan perlindungan hutan secara dini.' }
+                ]
+            }
+        };
+
+        /**
+         * ============================================================================
+         * 2. DUNIA & PEMAIN: SETUP THREE.JS, PETA 300x300, 6 ZONA, KARAKTER ROBLOX
+         * ============================================================================
+         */
+        let scene, camera, renderer;
+        let playerGroup, playerLimbs = {};
+        let worldColliders = [];
+        let zoneMarkers = [];
+        let friendlyNPCs = [];
+        let enemies = [];
+        let floatingEffects = [];
+
+        // InstancedMesh untuk 200 Murid Mabar (60 FPS)
+        let mabarBodyInstanced, mabarHeadInstanced;
+        const dummyMatrix = new THREE.Object3D();
+
+        const playerState = {
+            pos: new THREE.Vector3(0, 0, 12),
+            vel: new THREE.Vector3(0, 0, 0),
+            walkSpeed: 13,
+            sprintSpeed: 21,
+            jumpForce: 15,
+            gravity: 36,
+            isGrounded: false,
+            facingAngle: Math.PI,
+            walkCycle: 0,
+            attackCooldown: 0,
+            attackSwing: 0,
+            invulnTimer: 0
+        };
+
+        const inputKeys = { w: false, a: false, s: false, d: false, shift: false };
+        let camYaw = 0;
+        let camPitch = 0.38;
+        let camDist = 11;
+        let isMouseDragging = false;
+        let prevMouse = { x: 0, y: 0 };
+
+        function initWorld() {
+            const canvas = document.getElementById('game-canvas');
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x7dd3fc);
+            scene.fog = new THREE.Fog(0xbae6fd, 95, 290);
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 360);
+
+            renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+            // Pencahayaan Ambient + Directional
+            const ambient = new THREE.AmbientLight(0xffffff, 0.65);
+            scene.add(ambient);
+
+            const dirLight = new THREE.DirectionalLight(0xfffbeb, 0.95);
+            dirLight.position.set(80, 130, 60);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 1024;
+            dirLight.shadow.mapSize.height = 1024;
+            const shadowBound = 140;
+            dirLight.shadow.camera.left = -shadowBound;
+            dirLight.shadow.camera.right = shadowBound;
+            dirLight.shadow.camera.top = shadowBound;
+            dirLight.shadow.camera.bottom = -shadowBound;
+            scene.add(dirLight);
+
+            buildEnvironmentMap();
+            buildSixLearningZones();
+            buildPlayerRobloxCharacter();
+            spawnAllEnemiesAndNPCs();
+            initMabarInstancedMeshes();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        function createCanvasLabel(text, bgHex, textHex = '#ffffff', w = 8, h = 2) {
+            const c = document.createElement('canvas');
+            c.width = 512;
+            c.height = 128;
+            const ctx = c.getContext('2d');
+            ctx.fillStyle = bgHex;
+            ctx.beginPath();
+            ctx.roundRect(8, 8, 496, 112, 24);
+            ctx.fill();
+            ctx.lineWidth = 8;
+            ctx.strokeStyle = '#ffffff';
+            ctx.stroke();
+
+            ctx.font = 'bold 40px Fredoka, sans-serif';
+            ctx.fillStyle = textHex;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, 256, 66);
+
+            const tex = new THREE.CanvasTexture(c);
+            const mesh = new THREE.Mesh(
+                new THREE.PlaneGeometry(w, h),
+                new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide })
+            );
+            return mesh;
+        }
+
+        function addStaticBox(x, y, z, w, h, d, color, hasCollider = true) {
+            const mesh = new THREE.Mesh(
+                new THREE.BoxGeometry(w, h, d),
+                new THREE.MeshLambertMaterial({ color })
+            );
+            mesh.position.set(x, y, z);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            scene.add(mesh);
+            if (hasCollider) {
+                worldColliders.push({ x, y, z, w, h, d });
+            }
+            return mesh;
+        }
+
+        function buildEnvironmentMap() {
+            // Padang rumput luas 300 x 300 unit
+            const ground = new THREE.Mesh(
+                new THREE.PlaneGeometry(320, 320),
+                new THREE.MeshLambertMaterial({ color: 0x4ade80 })
+            );
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+
+            // Alun-alun kota kecil di pusat (0,0)
+            const plaza = new THREE.Mesh(
+                new THREE.CylinderGeometry(24, 24, 0.15, 24),
+                new THREE.MeshLambertMaterial({ color: 0xfef08a })
+            );
+            plaza.position.set(0, 0.08, 0);
+            plaza.receiveShadow = true;
+            scene.add(plaza);
+
+            // Tugu Monumen EduBlox di tengah Alun-Alun
+            addStaticBox(0, 2, 0, 3, 4, 3, 0x3b82f6, true);
+            const globe = new THREE.Mesh(
+                new THREE.SphereGeometry(1.6, 12, 12),
+                new THREE.MeshLambertMaterial({ color: 0xfacc15 })
+            );
+            globe.position.set(0, 5.2, 0);
+            scene.add(globe);
+            const welcomeSign = createCanvasLabel('🏫 ALUN-ALUN EDUBLOX', '#1e3a8a', '#facc15', 9, 2.1);
+            welcomeSign.position.set(0, 7.8, 0);
+            scene.add(welcomeSign);
+
+            // Jalan setapak penghubung dari pusat ke 6 zona
+            const roadMat = new THREE.MeshLambertMaterial({ color: 0xe2e8f0 });
+            ZONES_CONFIG.forEach(zCfg => {
+                const dist = Math.hypot(zCfg.x, zCfg.z);
+                const angle = Math.atan2(zCfg.x, zCfg.z);
+                const road = new THREE.Mesh(new THREE.BoxGeometry(5, 0.1, dist), roadMat);
+                road.position.set(zCfg.x / 2, 0.05, zCfg.z / 2);
+                road.rotation.y = angle;
+                road.receiveShadow = true;
+                scene.add(road);
+            });
+
+            // Danau biru di sisi utara (0, -110)
+            const lake = new THREE.Mesh(
+                new THREE.CylinderGeometry(22, 22, 0.18, 24),
+                new THREE.MeshLambertMaterial({ color: 0x38bdf8 })
+            );
+            lake.position.set(0, 0.09, -112);
+            scene.add(lake);
+
+            // Bukit-bukit rendah di tepi peta
+            const hillPositions = [
+                [-125, -120, 26, 10], [125, -120, 28, 12],
+                [-128, 118, 24, 9], [128, 118, 26, 11],
+                [0, 130, 30, 8]
+            ];
+            hillPositions.forEach(([hx, hz, rad, hh]) => {
+                const hill = new THREE.Mesh(
+                    new THREE.CylinderGeometry(rad * 0.55, rad, hh, 12),
+                    new THREE.MeshLambertMaterial({ color: 0x22c55e })
+                );
+                hill.position.set(hx, hh / 2, hz);
+                scene.add(hill);
+            });
+
+            // Hutan pohon blocky tersebar di berbagai area
+            const trunkMat = new THREE.MeshLambertMaterial({ color: 0x92400e });
+            const leafMat = new THREE.MeshLambertMaterial({ color: 0x15803d });
+            for (let i = 0; i < 65; i++) {
+                const tx = (Math.random() - 0.5) * 270;
+                const tz = (Math.random() - 0.5) * 270;
+                // Hindari pusat dan area zona
+                if (Math.hypot(tx, tz) < 30) continue;
+                let nearZone = false;
+                for (const zc of ZONES_CONFIG) {
+                    if (Math.hypot(tx - zc.x, tz - zc.z) < 22) nearZone = true;
+                }
+                if (nearZone || Math.hypot(tx, tz + 112) < 26) continue;
+
+                const tree = new THREE.Group();
+                const trunk = new THREE.Mesh(new THREE.BoxGeometry(1.1, 3.5, 1.1), trunkMat);
+                trunk.position.y = 1.75;
+                const crown = new THREE.Mesh(new THREE.BoxGeometry(4.2, 3.8, 4.2), leafMat);
+                crown.position.y = 4.8;
+                tree.add(trunk, crown);
+                tree.position.set(tx, 0, tz);
+                scene.add(tree);
+            }
+        }
+
+        function buildSixLearningZones() {
+            ZONES_CONFIG.forEach(zone => {
+                const g = new THREE.Group();
+                g.position.set(zone.x, 0, zone.z);
+
+                // Pelataran zona
+                const pad = new THREE.Mesh(
+                    new THREE.CylinderGeometry(18, 18, 0.2, 24),
+                    new THREE.MeshLambertMaterial({ color: zone.color })
+                );
+                pad.position.y = 0.1;
+                pad.receiveShadow = true;
+                g.add(pad);
+
+                // Bangunan khas per mata pelajaran
+                if (zone.id === 'Matematika') {
+                    // Gedung Matematika biru + simbol kubus & piramida angka
+                    addStaticBox(zone.x, 5, zone.z - 8, 14, 10, 8, 0x1d4ed8, true);
+                    const roof = new THREE.Mesh(new THREE.ConeGeometry(9, 4, 4), new THREE.MeshLambertMaterial({ color: 0xfacc15 }));
+                    roof.position.set(0, 12, -8);
+                    roof.rotation.y = Math.PI / 4;
+                    g.add(roof);
+                } else if (zone.id === 'IPAS') {
+                    // Area IPAS hijau + model tata surya berputar
+                    addStaticBox(zone.x, 3.5, zone.z - 8, 12, 7, 7, 0x15803d, true);
+                    const sun = new THREE.Mesh(new THREE.SphereGeometry(2.2, 12, 12), new THREE.MeshBasicMaterial({ color: 0xfacc15 }));
+                    sun.position.set(0, 10, -8);
+                    const planet = new THREE.Mesh(new THREE.SphereGeometry(0.9, 10, 10), new THREE.MeshLambertMaterial({ color: 0x38bdf8 }));
+                    planet.position.set(4.5, 10, -8);
+                    g.add(sun, planet);
+                } else if (zone.id === 'Bahasa Indonesia') {
+                    // Perpustakaan Oranye + Rak Buku Raksasa
+                    addStaticBox(zone.x, 4.5, zone.z - 8, 15, 9, 8, 0xc2410c, true);
+                    const bookColors = [0xfef08a, 0x38bdf8, 0x4ade80, 0xf472b6];
+                    for (let b = -4; b <= 4; b += 2) {
+                        const book = new THREE.Mesh(
+                            new THREE.BoxGeometry(1.4, 4, 1.2),
+                            new THREE.MeshLambertMaterial({ color: bookColors[Math.abs(b) % bookColors.length] })
+                        );
+                        book.position.set(b, 3, -3.5);
+                        g.add(book);
+                    }
+                } else if (zone.id === 'PKN') {
+                    // Balai PKN Merah Putih + Pilar Pancasila
+                    addStaticBox(zone.x, 4.5, zone.z - 8, 16, 9, 8, 0xb91c1c, true);
+                    const whiteBand = new THREE.Mesh(new THREE.BoxGeometry(16.2, 3, 8.2), new THREE.MeshLambertMaterial({ color: 0xffffff }));
+                    whiteBand.position.set(0, 3, -8);
+                    g.add(whiteBand);
+                } else if (zone.id === 'Koding') {
+                    // Lab Koding Ungu Neon + Layar Monitor Raksasa
+                    addStaticBox(zone.x, 4.5, zone.z - 8, 14, 9, 8, 0x5b21b6, true);
+                    const screen = new THREE.Mesh(new THREE.BoxGeometry(9, 5, 0.5), new THREE.MeshBasicMaterial({ color: 0x22d3ee }));
+                    screen.position.set(0, 5.5, -3.8);
+                    g.add(screen);
+                } else if (zone.id === 'AI') {
+                    // Pusat AI Cyan + Chip & Kepala Robot Raksasa
+                    addStaticBox(zone.x, 4.5, zone.z - 8, 14, 9, 8, 0x0e7490, true);
+                    const robotHead = new THREE.Mesh(new THREE.BoxGeometry(5, 4, 5), new THREE.MeshLambertMaterial({ color: 0xe2e8f0 }));
+                    robotHead.position.set(0, 11.2, -8);
+                    const visor = new THREE.Mesh(new THREE.BoxGeometry(4, 1.2, 0.4), new THREE.MeshBasicMaterial({ color: 0x22d3ee }));
+                    visor.position.set(0, 11.4, -5.4);
+                    g.add(robotHead, visor);
+                }
+
+                // Papan Nama Zona di atas gedung
+                const sign = createCanvasLabel(`${zone.icon} ${zone.title}`, zone.hex, '#ffffff', 10, 2.3);
+                sign.position.set(0, 13.8, -4);
+                g.add(sign);
+
+                scene.add(g);
+                zoneMarkers.push(zone);
+            });
+        }
+
+        /**
+         * ============================================================================
+         * 3. PEMAIN: KARAKTER BLOCKY ROBLOX (KEPALA, BADAN, TANGAN, KAKI, PEDANG BUKU)
+         * ============================================================================
+         */
+        function buildPlayerRobloxCharacter() {
+            playerGroup = new THREE.Group();
+
+            const shirtMat = new THREE.MeshLambertMaterial({ color: 0x2563eb });
+            const pantsMat = new THREE.MeshLambertMaterial({ color: 0x1e293b });
+            const skinMat = new THREE.MeshLambertMaterial({ color: 0xfde047 });
+
+            // Badan kotak
+            const torso = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.5, 0.7), shirtMat);
+            torso.position.y = 1.65;
+            torso.castShadow = true;
+            playerGroup.add(torso);
+
+            // Kepala kotak ala Roblox
+            const head = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.0, 1.0), skinMat);
+            head.position.y = 2.95;
+            head.castShadow = true;
+
+            const eyeMat = new THREE.MeshBasicMaterial({ color: 0x0f172a });
+            const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.2, 0.08), eyeMat);
+            eyeL.position.set(-0.22, 3.05, 0.51);
+            const eyeR = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.2, 0.08), eyeMat);
+            eyeR.position.set(0.22, 3.05, 0.51);
+            const smile = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.08, 0.08), eyeMat);
+            smile.position.set(0, 2.75, 0.51);
+            playerGroup.add(head, eyeL, eyeR, smile);
+
+            // Tangan Kiri & Kanan (dengan Tongkat Pensil Pengetahuan untuk menyerang!)
+            const armGeo = new THREE.BoxGeometry(0.55, 1.45, 0.6);
+            const leftArm = new THREE.Group();
+            leftArm.position.set(-0.95, 2.3, 0);
+            const lMesh = new THREE.Mesh(armGeo, skinMat);
+            lMesh.position.y = -0.65;
+            leftArm.add(lMesh);
+
+            const rightArm = new THREE.Group();
+            rightArm.position.set(0.95, 2.3, 0);
+            const rMesh = new THREE.Mesh(armGeo, skinMat);
+            rMesh.position.y = -0.65;
+            // Senjata Tongkat Pensil Raksasa di tangan kanan
+            const weapon = new THREE.Mesh(
+                new THREE.BoxGeometry(0.24, 0.24, 2.2),
+                new THREE.MeshLambertMaterial({ color: 0xfacc15 })
+            );
+            weapon.position.set(0, -1.2, 0.9);
+            const weaponTip = new THREE.Mesh(
+                new THREE.ConeGeometry(0.18, 0.45, 6),
+                new THREE.MeshBasicMaterial({ color: 0xef4444 })
+            );
+            weaponTip.rotation.x = Math.PI / 2;
+            weaponTip.position.set(0, -1.2, 2.15);
+            rightArm.add(rMesh, weapon, weaponTip);
+
+            // Kaki Kiri & Kanan
+            const legGeo = new THREE.BoxGeometry(0.6, 0.95, 0.65);
+            const leftLeg = new THREE.Group();
+            leftLeg.position.set(-0.34, 0.9, 0);
+            const llMesh = new THREE.Mesh(legGeo, pantsMat);
+            llMesh.position.y = -0.45;
+            leftLeg.add(llMesh);
+
+            const rightLeg = new THREE.Group();
+            rightLeg.position.set(0.34, 0.9, 0);
+            const rlMesh = new THREE.Mesh(legGeo, pantsMat);
+            rlMesh.position.y = -0.45;
+            rightLeg.add(rlMesh);
+
+            playerGroup.add(leftArm, rightArm, leftLeg, rightLeg);
+            playerLimbs = { leftArm, rightArm, leftLeg, rightLeg };
+
+            playerGroup.position.copy(playerState.pos);
+            scene.add(playerGroup);
+        }
+
+        /**
+         * ============================================================================
+         * 4. NPC & MUSUH: GURU RAMAH + MONSTER PER ZONA DENGAN HEALTH BAR 3D
+         * ============================================================================
+         */
+        function spawnAllEnemiesAndNPCs() {
+            ZONES_CONFIG.forEach(zone => {
+                // 1. Spawn Guru NPC Ramah di dekat pintu masuk zona
+                const npcGroup = new THREE.Group();
+                const npcX = zone.x - 5;
+                const npcZ = zone.z - 2;
+                npcGroup.position.set(npcX, 0, npcZ);
+
+                const body = new THREE.Mesh(
+                    new THREE.BoxGeometry(1.3, 1.6, 0.7),
+                    new THREE.MeshLambertMaterial({ color: zone.color })
+                );
+                body.position.y = 1.5;
+                const head = new THREE.Mesh(
+                    new THREE.BoxGeometry(1.0, 1.0, 1.0),
+                    new THREE.MeshLambertMaterial({ color: 0xfde047 })
+                );
+                head.position.y = 2.85;
+                const tag = createCanvasLabel(`💬 ${zone.npcName}`, '#0f172a', '#facc15', 7, 1.4);
+                tag.position.set(0, 4.3, 0);
+                npcGroup.add(body, head, tag);
+                scene.add(npcGroup);
+
+                friendlyNPCs.push({
+                    zoneId: zone.id,
+                    name: zone.npcName,
+                    icon: zone.icon,
+                    materials: zone.materials,
+                    x: npcX,
+                    z: npcZ,
+                    mesh: npcGroup
+                });
+
+                // 2. Spawn 2 Musuh per Zona dengan Health Bar di atas kepala
+                for (let m = 0; m < 2; m++) {
+                    const ex = zone.x + (m === 0 ? 6 : -7);
+                    const ez = zone.z + (m === 0 ? 5 : 8);
+                    spawnSingleEnemy(zone, ex, ez);
+                }
+            });
+        }
+
+        function spawnSingleEnemy(zone, homeX, homeZ) {
+            const eGroup = new THREE.Group();
+            eGroup.position.set(homeX, 0, homeZ);
+
+            const body = new THREE.Mesh(
+                new THREE.BoxGeometry(1.6, 1.6, 1.6),
+                new THREE.MeshLambertMaterial({ color: zone.enemyColor })
+            );
+            body.position.y = 1.0;
+            body.castShadow = true;
+
+            const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const pupilMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+            const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.35, 0.1), eyeMat);
+            eyeL.position.set(-0.38, 1.25, 0.81);
+            const eyeR = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.35, 0.1), eyeMat);
+            eyeR.position.set(0.38, 1.25, 0.81);
+            const pL = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.18, 0.12), pupilMat);
+            pL.position.set(-0.38, 1.25, 0.82);
+            const pR = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.18, 0.12), pupilMat);
+            pR.position.set(0.38, 1.25, 0.82);
+
+            // Health Bar 3D di atas kepala musuh
+            const hpBg = new THREE.Mesh(
+                new THREE.PlaneGeometry(2.2, 0.32),
+                new THREE.MeshBasicMaterial({ color: 0x1e293b, side: THREE.DoubleSide })
+            );
+            hpBg.position.set(0, 2.55, 0);
+
+            const hpFill = new THREE.Mesh(
+                new THREE.PlaneGeometry(2.08, 0.22),
+                new THREE.MeshBasicMaterial({ color: 0xef4444, side: THREE.DoubleSide })
+            );
+            hpFill.position.set(0, 2.55, 0.02);
+
+            const nameTag = createCanvasLabel(`👾 ${zone.enemyName}`, '#7f1d1d', '#ffffff', 5.2, 1.0);
+            nameTag.position.set(0, 3.3, 0);
+
+            eGroup.add(body, eyeL, eyeR, pL, pR, hpBg, hpFill, nameTag);
+            scene.add(eGroup);
+
+            enemies.push({
+                zoneId: zone.id,
+                name: zone.enemyName,
+                mesh: eGroup,
+                bodyMesh: body,
+                hpFillMesh: hpFill,
+                origColor: zone.enemyColor,
+                homeX,
+                homeZ,
+                hp: 60,
+                maxHp: 60,
+                alive: true,
+                respawnTimer: 0,
+                attackTimer: 0,
+                hitFlashTimer: 0,
+                knockbackVel: new THREE.Vector3()
+            });
+        }
+
+        /**
+         * ============================================================================
+         * 5. COMBAT: SERANGAN PEMAIN, DAMAGE FLASH, KNOCKBACK & AI MUSUH
+         * ============================================================================
+         */
+        function triggerPlayerAttack() {
+            if (!gameState.started || gameState.paused || gameState.modalOpen) return;
+            if (playerState.attackCooldown > 0) return;
+
+            playerState.attackCooldown = 0.42;
+            playerState.attackSwing = 1.0;
+
+            // Cek semua musuh hidup dalam jangkauan serangan (radius 4.6 unit di depan/sekitar pemain)
+            let hitCount = 0;
+            enemies.forEach(enemy => {
+                if (!enemy.alive) return;
+                const dx = enemy.mesh.position.x - playerState.pos.x;
+                const dz = enemy.mesh.position.z - playerState.pos.z;
+                const dist = Math.hypot(dx, dz);
+
+                if (dist <= 4.6) {
+                    hitCount++;
+                    enemy.hp -= playerData.damage;
+                    enemy.hitFlashTimer = 0.18;
+                    enemy.bodyMesh.material.color.setHex(0xffffff);
+
+                    // Efek Knockback menjauh dari pemain
+                    const nx = dist > 0.01 ? dx / dist : 0;
+                    const nz = dist > 0.01 ? dz / dist : 1;
+                    enemy.knockbackVel.set(nx * 14, 0, nz * 14);
+
+                    // Update Health Bar musuh
+                    const ratio = Math.max(0, enemy.hp / enemy.maxHp);
+                    enemy.hpFillMesh.scale.x = Math.max(0.001, ratio);
+                    enemy.hpFillMesh.position.x = -(1 - ratio) * 1.04;
+
+                    if (enemy.hp <= 0) {
+                        enemy.alive = false;
+                        enemy.mesh.visible = false;
+                        enemy.respawnTimer = 8.0; // Respawn setelah 8 detik
+                        showToast(`⚔️ ${enemy.name} dikalahkan! Jawab kuis ${enemy.zoneId}!`);
+                        setTimeout(() => openQuizModal(enemy.zoneId), 450);
+                    }
+                }
+            });
+
+            if (hitCount > 0) {
+                showToast(`💥 Serangan mengenai monster! (-${playerData.damage} HP)`);
+            }
+        }
+
+        function updateEnemiesAI(dt, time) {
+            enemies.forEach(enemy => {
+                if (!enemy.alive) {
+                    enemy.respawnTimer -= dt;
+                    if (enemy.respawnTimer <= 0) {
+                        enemy.alive = true;
+                        enemy.hp = enemy.maxHp;
+                        enemy.hpFillMesh.scale.x = 1;
+                        enemy.hpFillMesh.position.x = 0;
+                        enemy.mesh.position.set(enemy.homeX, 0, enemy.homeZ);
+                        enemy.mesh.visible = true;
+                    }
+                    return;
+                }
+
+                // Pulihkan warna flash saat terkena hit
+                if (enemy.hitFlashTimer > 0) {
+                    enemy.hitFlashTimer -= dt;
+                    if (enemy.hitFlashTimer <= 0) {
+                        enemy.bodyMesh.material.color.setHex(enemy.origColor);
+                    }
+                }
+
+                // Terapkan knockback
+                if (enemy.knockbackVel.lengthSq() > 0.1) {
+                    enemy.mesh.position.addScaledVector(enemy.knockbackVel, dt);
+                    enemy.knockbackVel.multiplyScalar(0.84);
+                }
+
+                // Billboarding health bar menghadap kamera
+                enemy.hpFillMesh.parent.children.forEach(child => {
+                    if (child.geometry && child.geometry.type === 'PlaneGeometry') {
+                        child.lookAt(camera.position);
+                    }
+                });
+
+                if (gameState.paused || gameState.modalOpen) return;
+
+                const dx = playerState.pos.x - enemy.mesh.position.x;
+                const dz = playerState.pos.z - enemy.mesh.position.z;
+                const distToPlayer = Math.hypot(dx, dz);
+
+                // AI Mengejar pemain dalam radius 18 unit
+                if (distToPlayer < 18 && distToPlayer > 2.1) {
+                    const moveSpeed = 5.4;
+                    enemy.mesh.position.x += (dx / distToPlayer) * moveSpeed * dt;
+                    enemy.mesh.position.z += (dz / distToPlayer) * moveSpeed * dt;
+                    enemy.mesh.rotation.y = Math.atan2(dx, dz);
+                    enemy.bodyMesh.position.y = 1.0 + Math.abs(Math.sin(time * 0.01)) * 0.35;
+                } else if (distToPlayer <= 2.2) {
+                    // Menyerang pemain saat dekat!
+                    enemy.attackTimer -= dt;
+                    if (enemy.attackTimer <= 0 && playerState.invulnTimer <= 0) {
+                        enemy.attackTimer = 1.3;
+                        damagePlayer(12, enemy.name, dx, dz);
+                    }
+                } else {
+                    // Kembali perlahan ke titik patroli awal
+                    const hx = enemy.homeX - enemy.mesh.position.x;
+                    const hz = enemy.homeZ - enemy.mesh.position.z;
+                    const hDist = Math.hypot(hx, hz);
+                    if (hDist > 1.0) {
+                        enemy.mesh.position.x += (hx / hDist) * 3.0 * dt;
+                        enemy.mesh.position.z += (hz / hDist) * 3.0 * dt;
+                    }
+                }
+            });
+        }
+
+        function damagePlayer(amount, attackerName, dx, dz) {
+            playerData.hp = Math.max(0, playerData.hp - amount);
+            playerState.invulnTimer = 0.8;
+
+            // Efek Flash Merah di layar
+            const flash = document.getElementById('damage-flash');
+            flash.style.opacity = '1';
+            setTimeout(() => { flash.style.opacity = '0'; }, 180);
+
+            // Knockback pemain
+            const dist = Math.hypot(dx, dz) || 1;
+            playerState.vel.x = (dx / dist) * 14;
+            playerState.vel.z = (dz / dist) * 14;
+            playerState.vel.y = 6;
+
+            updateHUD();
+
+            if (playerData.hp <= 0) {
+                gameState.modalOpen = true;
+                document.getElementById('gameover-modal').classList.remove('hidden');
+            } else {
+                showToast(`⚠️ Terkena serangan ${attackerName}! (-${amount} HP)`);
+            }
+        }
+
+        /**
+         * ============================================================================
+         * 7. KUIS: POPUP SOAL PILIHAN GANDA, REWARD & RAPOR BELAJAR
+         * ============================================================================
+         */
+        function getQuestionForZoneAndGrade(zoneId) {
+            const grade = playerData.grade || 1;
+            const list = QUESTION_BANK[grade][zoneId] || QUESTION_BANK[1]['Matematika'];
+            const available = list.map((item, idx) => ({ ...item, key: `${grade}_${zoneId}_${idx}` }))
+                .filter(item => !gameState.usedQuestions.has(item.key));
+
+            const pool = available.length > 0 ? available : list.map((item, idx) => ({ ...item, key: `${grade}_${zoneId}_${idx}` }));
+            const chosen = pool[Math.floor(Math.random() * pool.length)];
+            gameState.usedQuestions.add(chosen.key);
+            return chosen;
+        }
+
+        function openQuizModal(zoneId) {
+            if (gameState.modalOpen) return;
+            gameState.modalOpen = true;
+            inputKeys.w = inputKeys.a = inputKeys.s = inputKeys.d = false;
+
+            const zoneCfg = ZONES_CONFIG.find(z => z.id === zoneId) || ZONES_CONFIG[0];
+            const qObj = getQuestionForZoneAndGrade(zoneId);
+            gameState.activeQuiz = { zoneId, qObj };
+
+            const prog = playerData.subjectProgress[zoneId];
+            document.getElementById('quiz-subject-badge').textContent = `${zoneCfg.icon} ${zoneId} • Kelas ${playerData.grade}`;
+            document.getElementById('quiz-progress-badge').textContent = `Progress: ${prog.correct}/5 Benar`;
+            document.getElementById('quiz-question-text').textContent = qObj.q;
+
+            const optsContainer = document.getElementById('quiz-options-list');
+            optsContainer.innerHTML = '';
+            document.getElementById('quiz-result-box').classList.add('hidden');
+
+            const letters = ['A', 'B', 'C', 'D'];
+            qObj.opts.forEach((optText, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-roblox w-full text-left bg-white hover:bg-sky-50 border-3 border-slate-300 hover:border-blue-500 rounded-2xl p-3.5 font-bold text-slate-800 text-sm md:text-base flex items-center gap-3';
+                btn.innerHTML = `
+                    <span class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">${letters[idx]}</span>
+                    <span>${optText}</span>
+                `;
+                btn.onclick = () => submitQuizAnswer(idx, btn);
+                optsContainer.appendChild(btn);
+            });
+
+            document.getElementById('quiz-popup-modal').classList.remove('hidden');
+        }
+
+        function submitQuizAnswer(selectedIdx, clickedBtn) {
+            const { zoneId, qObj } = gameState.activeQuiz;
+            const isCorrect = (selectedIdx === qObj.ans);
+            const allButtons = document.querySelectorAll('#quiz-options-list button');
+            allButtons.forEach(b => b.disabled = true);
+
+            const resBox = document.getElementById('quiz-result-box');
+            const resTitle = document.getElementById('quiz-result-title');
+            const resExp = document.getElementById('quiz-result-exp');
+
+            playerData.totalAnswered += 1;
+            playerData.subjectProgress[zoneId].answered += 1;
+
+            resBox.classList.remove('hidden', 'bg-emerald-100', 'border-emerald-500', 'bg-rose-100', 'border-rose-500');
+
+            if (isCorrect) {
+                clickedBtn.classList.remove('bg-white', 'border-slate-300');
+                clickedBtn.classList.add('bg-emerald-500', 'text-white', 'border-emerald-700');
+
+                resBox.classList.add('bg-emerald-100', 'border-emerald-500');
+                resTitle.textContent = '🎉 JAWABAN BENAR! +25 Koin, +40 XP, +1 Poin Belajar!';
+                resTitle.className = 'font-bold text-base mb-1 text-emerald-900';
+
+                playerData.coins += 25;
+                playerData.totalCorrect += 1;
+                playerData.subjectProgress[zoneId].correct += 1;
+                grantXP(40);
+            } else {
+                clickedBtn.classList.remove('bg-white', 'border-slate-300');
+                clickedBtn.classList.add('bg-rose-500', 'text-white', 'border-rose-700');
+                allButtons[qObj.ans].classList.remove('bg-white', 'border-slate-300');
+                allButtons[qObj.ans].classList.add('bg-emerald-500', 'text-white', 'border-emerald-700');
+
+                resBox.classList.add('bg-rose-100', 'border-rose-500');
+                resTitle.textContent = `❌ Kurang Tepat (-10 HP). Jawaban benar: ${qObj.opts[qObj.ans]}`;
+                resTitle.className = 'font-bold text-base mb-1 text-rose-900';
+
+                playerData.hp = Math.max(5, playerData.hp - 10);
+                const flash = document.getElementById('damage-flash');
+                flash.style.opacity = '0.8';
+                setTimeout(() => { flash.style.opacity = '0'; }, 180);
+            }
+
+            resExp.textContent = `Penjelasan: ${qObj.exp}`;
+            savePlayerData();
+            updateHUD();
+        }
+
+        function grantXP(amount) {
+            playerData.xp += amount;
+            const nextLevelReq = playerData.level * 100;
+            if (playerData.xp >= nextLevelReq) {
+                playerData.level += 1;
+                playerData.maxHp += 15;
+                playerData.hp = playerData.maxHp;
+                playerData.damage += 8;
+                showToast(`🆙 NAIK LEVEL ${playerData.level}! Max HP & Serangan meningkat!`);
+            }
+        }
+
+        function renderRaporModal() {
+            document.getElementById('rapor-student-info').textContent =
+                `Nama: ${playerData.name} • Kelas ${playerData.grade} • Level ${playerData.level}`;
+            document.getElementById('rapor-total-xp').textContent = `${playerData.xp} XP`;
+            document.getElementById('rapor-total-points').textContent = `${playerData.totalCorrect} / 30`;
+
+            const acc = playerData.totalAnswered > 0
+                ? Math.round((playerData.totalCorrect / playerData.totalAnswered) * 100)
+                : 0;
+            document.getElementById('rapor-accuracy').textContent = `${acc}%`;
+
+            const listEl = document.getElementById('rapor-subjects-list');
+            listEl.innerHTML = '';
+
+            ZONES_CONFIG.forEach(z => {
+                const p = playerData.subjectProgress[z.id];
+                const subAcc = p.answered > 0 ? Math.round((p.correct / p.answered) * 100) : 0;
+                const pctBar = Math.min(100, Math.round((p.correct / 5) * 100));
+
+                const card = document.createElement('div');
+                card.className = 'bg-slate-50 border-2 border-slate-200 rounded-2xl p-3';
+                card.innerHTML = `
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-slate-800 text-sm">${z.icon} ${z.id}</span>
+                        <span class="text-xs font-bold text-blue-700">${p.correct}/5 Poin Belajar (Akurasi ${subAcc}%)</span>
+                    </div>
+                    <div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
+                        <div class="h-full bg-emerald-500" style="width: ${pctBar}%"></div>
+                    </div>
+                `;
+                listEl.appendChild(card);
+            });
+        }
+
+        /**
+         * ============================================================================
+         * 8. KLASMEN: LEADERBOARD PERSISTEN DI LOCALSTORAGE (UMUM & PER MAPEL)
+         * ============================================================================
+         */
+        function getPersistentLeaderboard() {
+            let board = [];
+            try {
+                const raw = localStorage.getItem(LEADERBOARD_KEY);
+                if (raw) board = JSON.parse(raw);
+            } catch (e) {}
+
+            if (!Array.isArray(board) || board.length === 0) {
+                board = [
+                    { name: 'Aisyah', grade: 5, xp: 420, coins: 250, correct: 11, subjects: { Matematika: 3, IPAS: 2, 'Bahasa Indonesia': 2, PKN: 2, Koding: 1, AI: 1 } },
+                    { name: 'Rizky', grade: 4, xp: 360, coins: 200, correct: 9, subjects: { Matematika: 2, IPAS: 3, 'Bahasa Indonesia': 1, PKN: 1, Koding: 1, AI: 1 } },
+                    { name: 'Nadia', grade: 6, xp: 310, coins: 175, correct: 8, subjects: { Matematika: 1, IPAS: 1, 'Bahasa Indonesia': 2, PKN: 2, Koding: 1, AI: 1 } },
+                    { name: 'Dimas', grade: 3, xp: 240, coins: 150, correct: 6, subjects: { Matematika: 2, IPAS: 1, 'Bahasa Indonesia': 1, PKN: 1, Koding: 1, AI: 0 } },
+                    { name: 'Zahra', grade: 2, xp: 180, coins: 100, correct: 5, subjects: { Matematika: 1, IPAS: 1, 'Bahasa Indonesia': 2, PKN: 1, Koding: 0, AI: 0 } }
+                ];
+            }
+            return board;
+        }
+
+        function updatePersistentLeaderboard() {
+            if (!playerData.name) return;
+            const board = getPersistentLeaderboard();
+            const subMap = {};
+            Object.keys(playerData.subjectProgress).forEach(k => {
+                subMap[k] = playerData.subjectProgress[k].correct;
+            });
+
+            const entry = {
+                name: playerData.name,
+                grade: playerData.grade,
+                xp: playerData.xp,
+                coins: playerData.coins,
+                correct: playerData.totalCorrect,
+                subjects: subMap,
+                isPlayer: true
+            };
+
+            const existingIdx = board.findIndex(item => item.name.toLowerCase() === playerData.name.toLowerCase());
+            if (existingIdx >= 0) {
+                board[existingIdx] = entry;
+            } else {
+                board.push(entry);
+            }
+
+            localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(board));
+        }
+
+        function renderKlasmenTable(filterSubject = 'ALL') {
+            updatePersistentLeaderboard();
+            const board = getPersistentLeaderboard();
+
+            // Urutkan berdasarkan XP -> Jumlah Benar -> Koin (atau skor mapel jika filter aktif)
+            board.sort((a, b) => {
+                if (filterSubject !== 'ALL') {
+                    const sa = (a.subjects && a.subjects[filterSubject]) || 0;
+                    const sb = (b.subjects && b.subjects[filterSubject]) || 0;
+                    if (sb !== sa) return sb - sa;
+                }
+                if (b.xp !== a.xp) return b.xp - a.xp;
+                if (b.correct !== a.correct) return b.correct - a.correct;
+                return b.coins - a.coins;
+            });
+
+            const tbody = document.getElementById('klasmen-tbody');
+            tbody.innerHTML = '';
+
+            board.forEach((row, idx) => {
+                const isSelf = row.name.toLowerCase() === playerData.name.toLowerCase();
+                const rankBadge = idx === 0 ? '🥇 #1' : idx === 1 ? '🥈 #2' : idx === 2 ? '🥉 #3' : `#${idx + 1}`;
+                const correctDisplay = filterSubject === 'ALL'
+                    ? `${row.correct} Benar`
+                    : `${(row.subjects && row.subjects[filterSubject]) || 0} Benar (${filterSubject})`;
+
+                const tr = document.createElement('tr');
+                tr.className = isSelf ? 'bg-amber-100 font-bold text-slate-900' : 'hover:bg-slate-50 text-slate-700';
+                tr.innerHTML = `
+                    <td class="py-2.5 px-3 font-bold">${rankBadge}</td>
+                    <td class="py-2.5 px-3">${row.name} ${isSelf ? '<span class="bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded ml-1">KAMU</span>' : ''}</td>
+                    <td class="py-2.5 px-3">Kelas ${row.grade}</td>
+                    <td class="py-2.5 px-3 text-center font-semibold text-emerald-700">${correctDisplay}</td>
+                    <td class="py-2.5 px-3 text-right font-semibold text-amber-700">🪙 ${row.coins}</td>
+                    <td class="py-2.5 px-3 text-right font-bold text-blue-700">${row.xp} XP</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        /**
+         * ============================================================================
+         * 9. MABAR_200 & REAL-TIME ONLINE MULTIPLAYER (PEERJS + 200 MURID LOD)
+         * ============================================================================
+         */
+        const BOT_FIRST_NAMES = [
+            'Budi', 'Siti', 'Rizky', 'Aisyah', 'Dimas', 'Putri', 'Fajar', 'Nadia', 'Galih', 'Zahra',
+            'Bagas', 'Rina', 'Dani', 'Citra', 'Kevin', 'Alya', 'Rafi', 'Intan', 'Ilham', 'Salsa',
+            'Bayu', 'Dewi', 'Andi', 'Nisa', 'Arif', 'Tari', 'Reza', 'Maya', 'Hendra', 'Lia',
+            'Yoga', 'Wulan', 'Fikri', 'Anisa', 'Gilang', 'Tiara', 'Rama', 'Melati', 'Naufal', 'Kartika'
+        ];
+
+        // State Koneksi Real-Time Antar Perangkat (PeerJS WebRTC DataChannel)
+        const netState = {
+            peer: null,
+            hostConn: null,
+            clientConns: new Map(), // peerId -> DataConnection
+            remotePlayers: new Map(), // peerId -> { id, name, grade, x, y, z, rotY, xp, mesh, targetPos }
+            myPeerId: 'local_' + Math.random().toString(36).slice(2, 8),
+            syncTick: 0
+        };
+
+        function createRemotePlayerMesh(name, grade) {
+            const group = new THREE.Group();
+            const shirtColors = [0xef4444, 0x10b981, 0xf59e0b, 0x8b5cf6, 0xec4899, 0x06b6d4];
+            const color = shirtColors[Math.abs(name.charCodeAt(0)) % shirtColors.length];
+
+            const torso = new THREE.Mesh(
+                new THREE.BoxGeometry(1.3, 1.5, 0.7),
+                new THREE.MeshLambertMaterial({ color })
+            );
+            torso.position.y = 1.65;
+
+            const head = new THREE.Mesh(
+                new THREE.BoxGeometry(1.0, 1.0, 1.0),
+                new THREE.MeshLambertMaterial({ color: 0xfde047 })
+            );
+            head.position.y = 2.95;
+
+            const legL = new THREE.Mesh(
+                new THREE.BoxGeometry(0.55, 0.95, 0.6),
+                new THREE.MeshLambertMaterial({ color: 0x1e293b })
+            );
+            legL.position.set(-0.34, 0.48, 0);
+
+            const legR = new THREE.Mesh(
+                new THREE.BoxGeometry(0.55, 0.95, 0.6),
+                new THREE.MeshLambertMaterial({ color: 0x1e293b })
+            );
+            legR.position.set(0.34, 0.48, 0);
+
+            const tag = createCanvasLabel(`🎓 ${name} (Kls ${grade})`, '#065f46', '#ffffff', 6.5, 1.3);
+            tag.position.set(0, 4.2, 0);
+
+            group.add(torso, head, legL, legR, tag);
+            scene.add(group);
+            return group;
+        }
+
+        function cleanupNetworkSession() {
+            if (netState.hostConn) {
+                try { netState.hostConn.close(); } catch (e) {}
+                netState.hostConn = null;
+            }
+            netState.clientConns.forEach(c => { try { c.close(); } catch (e) {} });
+            netState.clientConns.clear();
+            netState.remotePlayers.forEach(rp => {
+                if (rp.mesh) scene.remove(rp.mesh);
+            });
+            netState.remotePlayers.clear();
+            if (netState.peer) {
+                try { netState.peer.destroy(); } catch (e) {}
+                netState.peer = null;
+            }
+        }
+
+        function sanitizeRoomId(raw) {
+            return 'edublox_nusantara_' + (raw || 'KELAS4A').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+        }
+
+        function startOnlineHostRoom() {
+            const roomInput = document.getElementById('mabar-room-code').value.trim().toUpperCase() || 'KELAS4A';
+            const withBots = document.getElementById('mabar-fill-bots').checked;
+            const feedbackEl = document.getElementById('mabar-conn-feedback');
+
+            if (typeof Peer === 'undefined') {
+                feedbackEl.textContent = '⚠️ Koneksi PeerJS tidak tersedia, beralih ke simulasi offline...';
+                startMabarSession('offline', true);
+                return;
+            }
+
+            cleanupNetworkSession();
+            feedbackEl.textContent = '⏳ Membuat Room Online...';
+
+            const hostPeerId = sanitizeRoomId(roomInput);
+            const peer = new Peer(hostPeerId, { debug: 0 });
+            netState.peer = peer;
+
+            peer.on('open', (id) => {
+                netState.myPeerId = id;
+                gameState.mabarRoomCode = roomInput;
+                startMabarSession('online_host', withBots);
+                showToast(`👑 Room Online "${roomInput}" aktif! Bagikan kode ini ke teman!`);
+            });
+
+            peer.on('connection', (conn) => {
+                conn.on('open', () => {
+                    netState.clientConns.set(conn.peer, conn);
+                });
+                conn.on('data', (payload) => {
+                    handleIncomingNetworkPacket(conn.peer, payload);
+                });
+                conn.on('close', () => {
+                    netState.clientConns.delete(conn.peer);
+                    const rp = netState.remotePlayers.get(conn.peer);
+                    if (rp && rp.mesh) scene.remove(rp.mesh);
+                    netState.remotePlayers.delete(conn.peer);
+                });
+            });
+
+            peer.on('error', (err) => {
+                if (err.type === 'unavailable-id') {
+                    feedbackEl.textContent = `⚠️ Kode "${roomInput}" sudah dipakai Host lain. Klik "Gabung Room Teman" atau ganti kode!`;
+                } else {
+                    feedbackEl.textContent = `⚠️ Gagal terhubung (${err.type}). Coba ulangi atau gunakan Simulasi 200 Murid.`;
+                }
+            });
+        }
+
+        function joinOnlineClientRoom() {
+            const roomInput = document.getElementById('mabar-room-code').value.trim().toUpperCase() || 'KELAS4A';
+            const feedbackEl = document.getElementById('mabar-conn-feedback');
+
+            if (typeof Peer === 'undefined') {
+                feedbackEl.textContent = '⚠️ Koneksi PeerJS tidak tersedia, beralih ke simulasi offline...';
+                startMabarSession('offline', true);
+                return;
+            }
+
+            cleanupNetworkSession();
+            feedbackEl.textContent = `⏳ Menghubungkan ke Room "${roomInput}"...`;
+
+            const peer = new Peer({ debug: 0 });
+            netState.peer = peer;
+
+            peer.on('open', (myId) => {
+                netState.myPeerId = myId;
+                const hostPeerId = sanitizeRoomId(roomInput);
+                const conn = peer.connect(hostPeerId, { reliable: false });
+                netState.hostConn = conn;
+
+                conn.on('open', () => {
+                    gameState.mabarRoomCode = roomInput;
+                    startMabarSession('online_client', false);
+                    showToast(`🚀 Berhasil bergabung ke Room "${roomInput}"!`);
+                });
+
+                conn.on('data', (payload) => {
+                    handleIncomingNetworkPacket('HOST', payload);
+                });
+
+                conn.on('close', () => {
+                    showToast('⚠️ Koneksi ke Host Room terputus.');
+                });
+
+                conn.on('error', () => {
+                    feedbackEl.textContent = `⚠️ Room "${roomInput}" tidak ditemukan. Pastikan Host sudah klik "Buat Room"!`;
+                });
+            });
+
+            peer.on('error', (err) => {
+                feedbackEl.textContent = `⚠️ Gagal bergabung ke room (${err.type}). Pastikan kode room sama!`;
+            });
+        }
+
+        function handleIncomingNetworkPacket(senderId, packet) {
+            if (!packet || !packet.type) return;
+
+            if (packet.type === 'PLAYER_STATE') {
+                upsertRemotePlayer(packet.player);
+            } else if (packet.type === 'WORLD_SNAPSHOT' && Array.isArray(packet.players)) {
+                const activeIds = new Set();
+                packet.players.forEach(p => {
+                    if (p.id === netState.myPeerId) return;
+                    activeIds.add(p.id);
+                    upsertRemotePlayer(p);
+                });
+                // Hapus pemain yang sudah keluar
+                for (const [id, rp] of netState.remotePlayers.entries()) {
+                    if (!activeIds.has(id)) {
+                        if (rp.mesh) scene.remove(rp.mesh);
+                        netState.remotePlayers.delete(id);
+                    }
+                }
+                if (typeof packet.timeLeft === 'number') {
+                    gameState.mabarTimeLeft = packet.timeLeft;
+                }
+            }
+        }
+
+        function upsertRemotePlayer(pData) {
+            if (!pData || !pData.id || pData.id === netState.myPeerId) return;
+            let rp = netState.remotePlayers.get(pData.id);
+            if (!rp) {
+                rp = {
+                    id: pData.id,
+                    name: pData.name || 'Siswa',
+                    grade: pData.grade || 1,
+                    xp: pData.xp || 0,
+                    x: pData.x || 0,
+                    y: pData.y || 0,
+                    z: pData.z || 12,
+                    rotY: pData.rotY || 0,
+                    targetPos: new THREE.Vector3(pData.x || 0, pData.y || 0, pData.z || 12),
+                    mesh: createRemotePlayerMesh(pData.name || 'Siswa', pData.grade || 1)
+                };
+                rp.mesh.position.copy(rp.targetPos);
+                netState.remotePlayers.set(pData.id, rp);
+                showToast(`👋 ${rp.name} (Kelas ${rp.grade}) bergabung ke dunia!`);
+            } else {
+                rp.name = pData.name;
+                rp.grade = pData.grade;
+                rp.xp = pData.xp;
+                rp.rotY = pData.rotY;
+                rp.targetPos.set(pData.x, pData.y, pData.z);
+            }
+        }
+
+        function initMabarInstancedMeshes() {
+            const count = 199;
+            const bodyGeo = new THREE.BoxGeometry(1.1, 1.4, 0.6);
+            const bodyMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
+            mabarBodyInstanced = new THREE.InstancedMesh(bodyGeo, bodyMat, count);
+            mabarBodyInstanced.visible = false;
+
+            const headGeo = new THREE.BoxGeometry(0.85, 0.85, 0.85);
+            const headMat = new THREE.MeshLambertMaterial({ color: 0xfde047 });
+            mabarHeadInstanced = new THREE.InstancedMesh(headGeo, headMat, count);
+            mabarHeadInstanced.visible = false;
+
+            scene.add(mabarBodyInstanced, mabarHeadInstanced);
+        }
+
+        function startMabarSession(mode = 'offline', withBots = true) {
+            mabarBaselineXP = playerData.xp;
+            gameState.mabarActive = true;
+            gameState.mabarMode = mode;
+            gameState.mabarWithBots = withBots;
+            gameState.mabarTimeLeft = 300; // 5 menit
+            gameState.mabarParticipants = [];
+
+            // Pemain utama masuk di indeks 0
+            gameState.mabarParticipants.push({
+                id: netState.myPeerId,
+                name: playerData.name,
+                grade: playerData.grade,
+                xp: 0,
+                isSelf: true,
+                isBot: false
+            });
+
+            if (withBots) {
+                const colorPalette = [0xef4444, 0x3b82f6, 0x22c55e, 0xf59e0b, 0xa855f7, 0x06b6d4, 0xec4899];
+                const colorObj = new THREE.Color();
+
+                for (let i = 0; i < 199; i++) {
+                    const baseName = BOT_FIRST_NAMES[i % BOT_FIRST_NAMES.length];
+                    const suffix = i >= BOT_FIRST_NAMES.length ? `_${Math.floor(i / BOT_FIRST_NAMES.length) + 1}` : '';
+                    const targetZone = ZONES_CONFIG[i % ZONES_CONFIG.length];
+
+                    gameState.mabarParticipants.push({
+                        id: 'bot_' + i,
+                        name: baseName + suffix,
+                        grade: (i % 6) + 1,
+                        xp: Math.floor(Math.random() * 40),
+                        isSelf: false,
+                        isBot: true,
+                        x: (Math.random() - 0.5) * 40,
+                        z: (Math.random() - 0.5) * 40,
+                        tx: targetZone.x + (Math.random() - 0.5) * 20,
+                        tz: targetZone.z + (Math.random() - 0.5) * 20,
+                        speed: 6 + Math.random() * 6,
+                        pointTimer: 2 + Math.random() * 7
+                    });
+
+                    colorObj.setHex(colorPalette[i % colorPalette.length]);
+                    mabarBodyInstanced.setColorAt(i, colorObj);
+                }
+
+                if (mabarBodyInstanced.instanceColor) mabarBodyInstanced.instanceColor.needsUpdate = true;
+                mabarBodyInstanced.visible = true;
+                mabarHeadInstanced.visible = true;
+            } else {
+                mabarBodyInstanced.visible = false;
+                mabarHeadInstanced.visible = false;
+            }
+
+            const titleEl = document.getElementById('mabar-panel-title');
+            titleEl.textContent = mode === 'offline'
+                ? '🔥 MABAR 200 MURID'
+                : `🌐 ROOM: ${gameState.mabarRoomCode}`;
+
+            document.getElementById('mabar-live-panel').classList.remove('hidden');
+            document.getElementById('mabar-setup-modal').classList.add('hidden');
+            document.getElementById('mabar-result-modal').classList.add('hidden');
+            gameState.modalOpen = false;
+        }
+
+        let mabarUiTick = 0;
+        let mabarBaselineXP = 0;
+
+        function updateMabarSimulation(dt, time) {
+            if (!gameState.mabarActive) return;
+
+            if (!gameState.paused && !gameState.modalOpen) {
+                gameState.mabarTimeLeft -= dt;
+            }
+
+            const selfSessionXP = Math.max(0, playerData.xp - mabarBaselineXP);
+
+            // 1. Sinkronisasi Posisi & Skor Real-Time Antar Perangkat (12x per detik)
+            netState.syncTick += dt;
+            if (netState.syncTick >= 0.08 && gameState.mabarMode !== 'offline') {
+                netState.syncTick = 0;
+                const myPacket = {
+                    id: netState.myPeerId,
+                    name: playerData.name,
+                    grade: playerData.grade,
+                    x: Number(playerState.pos.x.toFixed(2)),
+                    y: Number(playerState.pos.y.toFixed(2)),
+                    z: Number(playerState.pos.z.toFixed(2)),
+                    rotY: Number(playerState.facingAngle.toFixed(2)),
+                    xp: selfSessionXP
+                };
+
+                if (gameState.mabarMode === 'online_client' && netState.hostConn && netState.hostConn.open) {
+                    netState.hostConn.send({ type: 'PLAYER_STATE', player: myPacket });
+                } else if (gameState.mabarMode === 'online_host') {
+                    const allOnline = [myPacket];
+                    netState.remotePlayers.forEach(rp => {
+                        allOnline.push({
+                            id: rp.id,
+                            name: rp.name,
+                            grade: rp.grade,
+                            x: rp.targetPos.x,
+                            y: rp.targetPos.y,
+                            z: rp.targetPos.z,
+                            rotY: rp.rotY,
+                            xp: rp.xp
+                        });
+                    });
+                    const snapshot = {
+                        type: 'WORLD_SNAPSHOT',
+                        timeLeft: gameState.mabarTimeLeft,
+                        players: allOnline
+                    };
+                    netState.clientConns.forEach(conn => {
+                        if (conn.open) conn.send(snapshot);
+                    });
+                }
+            }
+
+            // 2. Interpolasi Halus Karakter 3D Pemain Online Lainnya
+            netState.remotePlayers.forEach(rp => {
+                if (rp.mesh) {
+                    rp.mesh.position.lerp(rp.targetPos, 0.25);
+                    rp.mesh.rotation.y = rp.rotY;
+                    // Nametag selalu menghadap kamera
+                    const tag = rp.mesh.children[4];
+                    if (tag) tag.lookAt(camera.position);
+                }
+            });
+
+            // 3. Update Murid AI (jika aktif)
+            if (gameState.mabarWithBots) {
+                let botInstIdx = 0;
+                for (let i = 0; i < gameState.mabarParticipants.length; i++) {
+                    const bot = gameState.mabarParticipants[i];
+                    if (!bot.isBot) continue;
+
+                    const dx = bot.tx - bot.x;
+                    const dz = bot.tz - bot.z;
+                    const dist = Math.hypot(dx, dz);
+
+                    if (dist > 1.5) {
+                        bot.x += (dx / dist) * bot.speed * dt;
+                        bot.z += (dz / dist) * bot.speed * dt;
+                    } else {
+                        const nextZone = ZONES_CONFIG[Math.floor(Math.random() * ZONES_CONFIG.length)];
+                        bot.tx = nextZone.x + (Math.random() - 0.5) * 22;
+                        bot.tz = nextZone.z + (Math.random() - 0.5) * 22;
+                    }
+
+                    bot.pointTimer -= dt;
+                    if (bot.pointTimer <= 0) {
+                        bot.xp += 20 + Math.floor(Math.random() * 25);
+                        bot.pointTimer = 4 + Math.random() * 9;
+                    }
+
+                    const distToPlayer = Math.hypot(bot.x - playerState.pos.x, bot.z - playerState.pos.z);
+                    if (distToPlayer < 120 && botInstIdx < 199) {
+                        const hop = Math.abs(Math.sin(time * 0.009 + botInstIdx)) * 0.25;
+                        dummyMatrix.position.set(bot.x, 1.1 + hop, bot.z);
+                        dummyMatrix.scale.set(1, 1, 1);
+                        dummyMatrix.updateMatrix();
+                        mabarBodyInstanced.setMatrixAt(botInstIdx, dummyMatrix.matrix);
+
+                        dummyMatrix.position.set(bot.x, 2.3 + hop, bot.z);
+                        dummyMatrix.updateMatrix();
+                        mabarHeadInstanced.setMatrixAt(botInstIdx, dummyMatrix.matrix);
+                    } else if (botInstIdx < 199) {
+                        dummyMatrix.position.set(0, -50, 0);
+                        dummyMatrix.scale.set(0.01, 0.01, 0.01);
+                        dummyMatrix.updateMatrix();
+                        mabarBodyInstanced.setMatrixAt(botInstIdx, dummyMatrix.matrix);
+                        mabarHeadInstanced.setMatrixAt(botInstIdx, dummyMatrix.matrix);
+                    }
+                    botInstIdx++;
+                }
+
+                mabarBodyInstanced.instanceMatrix.needsUpdate = true;
+                mabarHeadInstanced.instanceMatrix.needsUpdate = true;
+            }
+
+            // 4. Gabungkan Pemain Asli + Pemain Online + Bot AI untuk Papan Skor Real-Time
+            mabarUiTick += dt;
+            if (mabarUiTick >= 0.45) {
+                mabarUiTick = 0;
+                const mins = Math.max(0, Math.floor(gameState.mabarTimeLeft / 60));
+                const secs = Math.max(0, Math.floor(gameState.mabarTimeLeft % 60));
+                document.getElementById('mabar-timer-badge').textContent =
+                    `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+                const combinedList = [
+                    { name: playerData.name, grade: playerData.grade, xp: selfSessionXP, isSelf: true, isHuman: true }
+                ];
+
+                netState.remotePlayers.forEach(rp => {
+                    combinedList.push({
+                        name: rp.name,
+                        grade: rp.grade,
+                        xp: rp.xp || 0,
+                        isSelf: false,
+                        isHuman: true
+                    });
+                });
+
+                if (gameState.mabarWithBots) {
+                    gameState.mabarParticipants.forEach(p => {
+                        if (p.isBot) combinedList.push(p);
+                    });
+                }
+
+                const onlineHumanCount = 1 + netState.remotePlayers.size;
+                document.getElementById('mabar-online-status').textContent = gameState.mabarMode === 'offline'
+                    ? `🤖 Simulasi Offline: 200 Peserta`
+                    : `🌐 Terhubung: ${onlineHumanCount} Siswa Online (Total ${combinedList.length})`;
+
+                const sorted = combinedList.sort((a, b) => b.xp - a.xp);
+                const selfRank = sorted.findIndex(p => p.isSelf) + 1;
+
+                document.getElementById('mabar-self-rank').innerHTML =
+                    `<span>Peringkatmu: #${selfRank} dari ${sorted.length}</span><span>${selfSessionXP} XP</span>`;
+
+                const top10El = document.getElementById('mabar-top10-list');
+                top10El.innerHTML = '';
+                sorted.slice(0, 10).forEach((p, idx) => {
+                    const badge = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`;
+                    const humanTag = p.isHuman && !p.isSelf ? ' 🟢' : '';
+                    const div = document.createElement('div');
+                    div.className = `flex justify-between px-2 py-0.5 rounded ${p.isSelf ? 'bg-amber-400/30 text-amber-200 font-bold' : 'text-slate-100'}`;
+                    div.innerHTML = `<span class="truncate">${badge} ${p.name}${humanTag} (Kls ${p.grade})</span><span class="font-bold text-amber-300">${p.xp} XP</span>`;
+                    top10El.appendChild(div);
+                });
+
+                if (gameState.mabarTimeLeft <= 0) {
+                    finishMabarSession(sorted, selfRank);
+                }
+            }
+        }
+
+        function finishMabarSession(sorted, selfRank) {
+            gameState.mabarActive = false;
+            gameState.modalOpen = true;
+            mabarBodyInstanced.visible = false;
+            mabarHeadInstanced.visible = false;
+            document.getElementById('mabar-live-panel').classList.add('hidden');
+
+            document.getElementById('mabar-final-rank-msg').textContent =
+                `Selamat! ${playerData.name} meraih Peringkat #${selfRank} dari 200 Peserta!`;
+
+            for (let i = 0; i < 3; i++) {
+                const p = sorted[i];
+                if (p) {
+                    document.getElementById(`mabar-p${i + 1}-name`).textContent = `${p.name} (Kls ${p.grade})`;
+                    document.getElementById(`mabar-p${i + 1}-xp`).textContent = `${p.xp} XP`;
+                }
+            }
+
+            document.getElementById('mabar-result-modal').classList.remove('hidden');
+        }
+
+        /**
+         * ============================================================================
+         * 10. UI & MINIMAP 2D
+         * ============================================================================
+         */
+        let toastTimer = null;
+        function showToast(msg) {
+            const box = document.getElementById('toast-box');
+            document.getElementById('toast-text').textContent = msg;
+            box.classList.remove('hidden');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => box.classList.add('hidden'), 2800);
+        }
+
+        function updateHUD() {
+            document.getElementById('hud-name').textContent = playerData.name;
+            document.getElementById('hud-grade-badge').textContent = `Kelas ${playerData.grade}`;
+            document.getElementById('hud-progress-grade').textContent = `Kelas ${playerData.grade}`;
+            document.getElementById('hud-level').textContent = `Lv. ${playerData.level}`;
+            document.getElementById('hud-coins').textContent = `🪙 ${playerData.coins} Koin`;
+
+            document.getElementById('hud-hp-text').textContent = `${playerData.hp} / ${playerData.maxHp}`;
+            document.getElementById('hud-hp-bar').style.width = `${Math.max(0, (playerData.hp / playerData.maxHp) * 100)}%`;
+
+            const reqXp = playerData.level * 100;
+            const curLevelXp = playerData.xp % 100;
+            document.getElementById('hud-xp-text').textContent = `${playerData.xp} / ${reqXp}`;
+            document.getElementById('hud-xp-bar').style.width = `${Math.min(100, (curLevelXp / 100) * 100)}%`;
+
+            document.getElementById('hud-total-correct').textContent = `${playerData.totalCorrect}/30 Benar`;
+
+            const progGrid = document.getElementById('hud-subject-progress');
+            progGrid.innerHTML = '';
+            ZONES_CONFIG.forEach(z => {
+                const p = playerData.subjectProgress[z.id];
+                const el = document.createElement('div');
+                el.className = 'bg-white/10 rounded-lg px-2 py-1 flex justify-between items-center';
+                el.innerHTML = `<span class="truncate">${z.icon} ${z.id === 'Bahasa Indonesia' ? 'B. Indo' : z.id}</span><span class="font-bold text-emerald-300">${p.correct}/5</span>`;
+                progGrid.appendChild(el);
+            });
+        }
+
+        function drawMinimap() {
+            const canvas = document.getElementById('minimap-canvas');
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+            const scale = w / 300; // Peta -150..+150
+
+            ctx.clearRect(0, 0, w, h);
+            ctx.fillStyle = '#15803d';
+            ctx.fillRect(0, 0, w, h);
+
+            // Danau Utara
+            ctx.fillStyle = '#38bdf8';
+            ctx.beginPath();
+            ctx.arc(w / 2 + 0 * scale, h / 2 + (-112) * scale, 22 * scale, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Penanda 6 Zona Belajar
+            ZONES_CONFIG.forEach(z => {
+                const zx = w / 2 + z.x * scale;
+                const zy = h / 2 + z.z * scale;
+                ctx.fillStyle = z.hex;
+                ctx.beginPath();
+                ctx.arc(zx, zy, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            });
+
+            // Penanda Posisi Pemain (Titik Kuning Berkedip)
+            const px = w / 2 + playerState.pos.x * scale;
+            const py = h / 2 + playerState.pos.z * scale;
+            ctx.fillStyle = '#facc15';
+            ctx.beginPath();
+            ctx.arc(px, py, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        }
+
+        /**
+         * ============================================================================
+         * 11. GAME_LOOP: FISIKA PEMAIN, INTERAKSI NPC & KONTROL EVENT
+         * ============================================================================
+         */
+        let nearbyNPC = null;
+
+        function updatePlayerMovement(dt) {
+            if (!gameState.started || gameState.paused || gameState.modalOpen) return;
+
+            if (playerState.attackCooldown > 0) playerState.attackCooldown -= dt;
+            if (playerState.invulnTimer > 0) playerState.invulnTimer -= dt;
+
+            // Input gerak
+            let forward = 0;
+            let right = 0;
+            if (inputKeys.w) forward += 1;
+            if (inputKeys.s) forward -= 1;
+            if (inputKeys.d) right += 1;
+            if (inputKeys.a) right -= 1;
+
+            const isMoving = (forward !== 0 || right !== 0);
+            const wantsSprint = inputKeys.shift && isMoving && playerData.stamina > 2;
+
+            if (wantsSprint) {
+                playerData.stamina = Math.max(0, playerData.stamina - 28 * dt);
+            } else {
+                playerData.stamina = Math.min(100, playerData.stamina + 18 * dt);
+            }
+
+            document.getElementById('hud-stamina-text').textContent = `${Math.round(playerData.stamina)}%`;
+            document.getElementById('hud-stamina-bar').style.width = `${playerData.stamina}%`;
+
+            const activeSpeed = wantsSprint ? playerState.sprintSpeed : playerState.walkSpeed;
+
+            if (isMoving) {
+                const sin = Math.sin(camYaw);
+                const cos = Math.cos(camYaw);
+                const dirX = (-sin * forward) + (cos * right);
+                const dirZ = (-cos * forward) + (-sin * right);
+                const len = Math.hypot(dirX, dirZ) || 1;
+
+                playerState.vel.x = (dirX / len) * activeSpeed;
+                playerState.vel.z = (dirZ / len) * activeSpeed;
+                playerState.facingAngle = Math.atan2(dirX / len, dirZ / len);
+            } else {
+                playerState.vel.x *= 0.78;
+                playerState.vel.z *= 0.78;
+            }
+
+            playerState.vel.y -= playerState.gravity * dt;
+
+            // Update posisi + deteksi tabrakan kotak bangunan
+            const nextX = Math.max(-145, Math.min(145, playerState.pos.x + playerState.vel.x * dt));
+            const nextZ = Math.max(-145, Math.min(145, playerState.pos.z + playerState.vel.z * dt));
+
+            let blocked = false;
+            for (const col of worldColliders) {
+                if (Math.abs(nextX - col.x) < (col.w / 2 + 0.7) &&
+                    Math.abs(nextZ - col.z) < (col.d / 2 + 0.7) &&
+                    playerState.pos.y < col.y + col.h / 2) {
+                    blocked = true;
+                    break;
+                }
+            }
+            if (!blocked) {
+                playerState.pos.x = nextX;
+                playerState.pos.z = nextZ;
+            }
+
+            playerState.pos.y += playerState.vel.y * dt;
+            if (playerState.pos.y <= 0) {
+                playerState.pos.y = 0;
+                playerState.vel.y = 0;
+                playerState.isGrounded = true;
+            }
+
+            playerGroup.position.copy(playerState.pos);
+            playerGroup.rotation.y = playerState.facingAngle;
+
+            // Animasi kaki & tangan blocky
+            if (!playerState.isGrounded) {
+                playerLimbs.leftArm.rotation.x = Math.PI * 0.8;
+                playerLimbs.rightArm.rotation.x = Math.PI * 0.8;
+                playerLimbs.leftLeg.rotation.x = 0.35;
+                playerLimbs.rightLeg.rotation.x = -0.35;
+            } else if (isMoving) {
+                playerState.walkCycle += dt * (wantsSprint ? 16 : 11);
+                const swing = Math.sin(playerState.walkCycle) * 0.65;
+                playerLimbs.leftArm.rotation.x = swing;
+                playerLimbs.rightArm.rotation.x = -swing;
+                playerLimbs.leftLeg.rotation.x = -swing;
+                playerLimbs.rightLeg.rotation.x = swing;
+            } else {
+                playerLimbs.leftArm.rotation.x *= 0.8;
+                playerLimbs.rightArm.rotation.x *= 0.8;
+                playerLimbs.leftLeg.rotation.x *= 0.8;
+                playerLimbs.rightLeg.rotation.x *= 0.8;
+            }
+
+            // Animasi ayunan senjata saat menyerang
+            if (playerState.attackSwing > 0) {
+                playerState.attackSwing = Math.max(0, playerState.attackSwing - dt * 4.5);
+                playerLimbs.rightArm.rotation.x = -Math.sin(playerState.attackSwing * Math.PI) * 2.1;
+            }
+
+            // Cek zona terdekat & kedekatan dengan Guru NPC
+            let currentZoneText = '🗺️ Alun-Alun Nusantara';
+            for (const z of ZONES_CONFIG) {
+                if (Math.hypot(playerState.pos.x - z.x, playerState.pos.z - z.z) < 22) {
+                    currentZoneText = `${z.icon} ${z.title}`;
+                    gameState.activeZoneId = z.id;
+                    break;
+                }
+            }
+            document.getElementById('hud-zone-label').textContent = currentZoneText;
+
+            nearbyNPC = null;
+            for (const npc of friendlyNPCs) {
+                if (Math.hypot(playerState.pos.x - npc.x, playerState.pos.z - npc.z) < 4.5) {
+                    nearbyNPC = npc;
+                    break;
+                }
+            }
+
+            const promptEl = document.getElementById('interaction-prompt');
+            if (nearbyNPC) {
+                promptEl.classList.remove('hidden');
+                document.getElementById('btn-interact-action').textContent =
+                    `💬 Bicara dengan ${nearbyNPC.name} [E]`;
+            } else {
+                promptEl.classList.add('hidden');
+            }
+
+            // Kamera Third-Person
+            const hDist = Math.cos(camPitch) * camDist;
+            const vHeight = Math.sin(camPitch) * camDist + 2.2;
+            const targetCamPos = new THREE.Vector3(
+                playerState.pos.x + Math.sin(camYaw) * hDist,
+                Math.max(1.2, playerState.pos.y + vHeight),
+                playerState.pos.z + Math.cos(camYaw) * hDist
+            );
+            camera.position.lerp(targetCamPos, 0.18);
+            camera.lookAt(playerState.pos.x, playerState.pos.y + 2.1, playerState.pos.z);
+        }
+
+        function openFriendlyNPCDialog(npc) {
+            if (!npc || gameState.modalOpen) return;
+            gameState.modalOpen = true;
+            gameState.activeZoneId = npc.zoneId;
+            inputKeys.w = inputKeys.a = inputKeys.s = inputKeys.d = false;
+
+            document.getElementById('npc-dialog-icon').textContent = npc.icon;
+            document.getElementById('npc-dialog-name').textContent = npc.name;
+            document.getElementById('npc-dialog-sub').textContent = `Materi ${npc.zoneId} • Kelas ${playerData.grade}`;
+            document.getElementById('npc-dialog-text').textContent = npc.materials[playerData.grade];
+
+            document.getElementById('npc-dialog-modal').classList.remove('hidden');
+        }
+
+        function setupControlsAndEvents() {
+            const nameInput = document.getElementById('start-input-name');
+            const startBtn = document.getElementById('btn-start-play');
+            const gradeLabel = document.getElementById('start-selected-grade-label');
+
+            function validateStartReady() {
+                const hasName = nameInput.value.trim().length > 0;
+                const hasGrade = playerData.grade >= 1 && playerData.grade <= 6;
+                startBtn.disabled = !(hasName && hasGrade);
+            }
+
+            // Muat data tersimpan di Start Screen
+            if (playerData.name) nameInput.value = playerData.name;
+            if (playerData.grade >= 1 && playerData.grade <= 6) {
+                gradeLabel.textContent = `Terpilih: KELAS ${playerData.grade}`;
+                document.querySelectorAll('.grade-choice-btn').forEach(btn => {
+                    if (Number(btn.dataset.grade) === playerData.grade) {
+                        btn.classList.remove('bg-white', 'text-slate-800', 'border-slate-300');
+                        btn.classList.add('bg-blue-600', 'text-white', 'border-blue-900', 'scale-105');
+                    }
+                });
+            }
+            validateStartReady();
+
+            nameInput.addEventListener('input', validateStartReady);
+
+            document.querySelectorAll('.grade-choice-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.grade-choice-btn').forEach(b => {
+                        b.classList.remove('bg-blue-600', 'text-white', 'border-blue-900', 'scale-105');
+                        b.classList.add('bg-white', 'text-slate-800', 'border-slate-300');
+                    });
+                    btn.classList.remove('bg-white', 'text-slate-800', 'border-slate-300');
+                    btn.classList.add('bg-blue-600', 'text-white', 'border-blue-900', 'scale-105');
+
+                    playerData.grade = Number(btn.dataset.grade);
+                    gradeLabel.textContent = `Terpilih: KELAS ${playerData.grade}`;
+                    validateStartReady();
+                });
+            });
+
+            startBtn.addEventListener('click', () => {
+                playerData.name = nameInput.value.trim();
+                savePlayerData();
+                updateHUD();
+
+                document.getElementById('start-screen-modal').classList.add('hidden');
+                document.getElementById('hud-layer').classList.remove('hidden');
+                gameState.started = true;
+                gameState.paused = false;
+                gameState.modalOpen = false;
+                showToast(`Selamat datang ${playerData.name} (Kelas ${playerData.grade})! Ayo jelajahi 6 Zona Belajar!`);
+            });
+
+            // Keyboard Controls
+            window.addEventListener('keydown', (e) => {
+                const k = e.key.toLowerCase();
+                if (e.key === 'Escape' && gameState.started && !gameState.modalOpen) {
+                    gameState.paused = !gameState.paused;
+                    document.getElementById('pause-modal').classList.toggle('hidden', !gameState.paused);
+                    return;
+                }
+                if (!gameState.started || gameState.paused || gameState.modalOpen) return;
+
+                if (k === 'w' || e.key === 'ArrowUp') inputKeys.w = true;
+                if (k === 's' || e.key === 'ArrowDown') inputKeys.s = true;
+                if (k === 'a' || e.key === 'ArrowLeft') inputKeys.a = true;
+                if (k === 'd' || e.key === 'ArrowRight') inputKeys.d = true;
+                if (e.key === 'Shift') inputKeys.shift = true;
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    if (playerState.isGrounded) {
+                        playerState.vel.y = playerState.jumpForce;
+                        playerState.isGrounded = false;
+                    }
+                }
+                if (k === 'f') triggerPlayerAttack();
+                if (k === 'e' && nearbyNPC) openFriendlyNPCDialog(nearbyNPC);
+            });
+
+            window.addEventListener('keyup', (e) => {
+                const k = e.key.toLowerCase();
+                if (k === 'w' || e.key === 'ArrowUp') inputKeys.w = false;
+                if (k === 's' || e.key === 'ArrowDown') inputKeys.s = false;
+                if (k === 'a' || e.key === 'ArrowLeft') inputKeys.a = false;
+                if (k === 'd' || e.key === 'ArrowRight') inputKeys.d = false;
+                if (e.key === 'Shift') inputKeys.shift = false;
+            });
+
+            // Mouse Kamera & Serang Klik Kiri
+            const canvas = document.getElementById('game-canvas');
+            let mouseDownPos = { x: 0, y: 0 };
+
+            canvas.addEventListener('mousedown', (e) => {
+                isMouseDragging = true;
+                prevMouse = { x: e.clientX, y: e.clientY };
+                mouseDownPos = { x: e.clientX, y: e.clientY };
+            });
+
+            window.addEventListener('mouseup', (e) => {
+                if (isMouseDragging && e.button === 0) {
+                    const moveDist = Math.hypot(e.clientX - mouseDownPos.x, e.clientY - mouseDownPos.y);
+                    if (moveDist < 6) triggerPlayerAttack();
+                }
+                isMouseDragging = false;
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!isMouseDragging || !gameState.started || gameState.paused || gameState.modalOpen) return;
+                camYaw -= (e.clientX - prevMouse.x) * 0.0075;
+                camPitch = Math.max(0.1, Math.min(1.15, camPitch + (e.clientY - prevMouse.y) * 0.006));
+                prevMouse = { x: e.clientX, y: e.clientY };
+            });
+
+            canvas.addEventListener('wheel', (e) => {
+                if (!gameState.started) return;
+                camDist = Math.max(4.5, Math.min(26, camDist + e.deltaY * 0.012));
+            }, { passive: true });
+
+            // Tombol Sentuh & UI Modals
+            const bindTouch = (id, key) => {
+                const el = document.getElementById(id);
+                el.addEventListener('touchstart', (e) => { e.preventDefault(); inputKeys[key] = true; });
+                el.addEventListener('touchend', (e) => { e.preventDefault(); inputKeys[key] = false; });
+            };
+            bindTouch('touch-up', 'w');
+            bindTouch('touch-down', 's');
+            bindTouch('touch-left', 'a');
+            bindTouch('touch-right', 'd');
+
+            document.getElementById('btn-action-attack').addEventListener('click', triggerPlayerAttack);
+            document.getElementById('btn-action-jump').addEventListener('click', () => {
+                if (playerState.isGrounded) {
+                    playerState.vel.y = playerState.jumpForce;
+                    playerState.isGrounded = false;
+                }
+            });
+
+            document.getElementById('btn-interact-action').addEventListener('click', () => {
+                if (nearbyNPC) openFriendlyNPCDialog(nearbyNPC);
+            });
+
+            document.getElementById('btn-npc-close').addEventListener('click', () => {
+                document.getElementById('npc-dialog-modal').classList.add('hidden');
+                gameState.modalOpen = false;
+            });
+
+            document.getElementById('btn-npc-start-quiz').addEventListener('click', () => {
+                document.getElementById('npc-dialog-modal').classList.add('hidden');
+                gameState.modalOpen = false;
+                openQuizModal(gameState.activeZoneId);
+            });
+
+            document.getElementById('btn-quiz-continue').addEventListener('click', () => {
+                document.getElementById('quiz-popup-modal').classList.add('hidden');
+                gameState.modalOpen = false;
+            });
+
+            // Rapor Modal
+            document.getElementById('btn-hud-rapor').addEventListener('click', () => {
+                gameState.modalOpen = true;
+                renderRaporModal();
+                document.getElementById('rapor-modal').classList.remove('hidden');
+            });
+            document.getElementById('btn-close-rapor').addEventListener('click', () => {
+                document.getElementById('rapor-modal').classList.add('hidden');
+                gameState.modalOpen = false;
+            });
+
+            // Klasmen Modal
+            document.getElementById('btn-hud-klasmen').addEventListener('click', () => {
+                gameState.modalOpen = true;
+                renderKlasmenTable('ALL');
+                document.getElementById('klasmen-modal').classList.remove('hidden');
+            });
+            document.getElementById('btn-close-klasmen').addEventListener('click', () => {
+                document.getElementById('klasmen-modal').classList.add('hidden');
+                gameState.modalOpen = false;
+            });
+            document.querySelectorAll('.lb-filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.lb-filter-btn').forEach(b => {
+                        b.className = 'lb-filter-btn bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-xl text-xs border border-slate-300';
+                    });
+                    btn.className = 'lb-filter-btn bg-amber-400 text-amber-950 font-bold px-3 py-1 rounded-xl text-xs border-2 border-amber-600';
+                    renderKlasmenTable(btn.dataset.lbFilter);
+                });
+            });
+
+            // Mabar 200 Murid & Online Real-Time Modal
+            document.getElementById('btn-hud-mabar').addEventListener('click', () => {
+                gameState.modalOpen = true;
+                document.getElementById('mabar-setup-modal').classList.remove('hidden');
+            });
+            document.getElementById('btn-close-mabar-setup').addEventListener('click', () => {
+                document.getElementById('mabar-setup-modal').classList.add('hidden');
+                gameState.modalOpen = false;
+            });
+
+            document.getElementById('btn-mode-online-real').addEventListener('click', () => {
+                document.getElementById('btn-mode-online-real').className = 'btn-roblox bg-emerald-500 text-white font-bold p-3 rounded-2xl border-3 border-emerald-700 text-left text-xs';
+                document.getElementById('btn-mode-sim-200').className = 'btn-roblox bg-slate-100 text-slate-800 font-bold p-3 rounded-2xl border-3 border-slate-300 text-left text-xs';
+                document.getElementById('mabar-online-config-box').classList.remove('hidden');
+            });
+
+            document.getElementById('btn-mode-sim-200').addEventListener('click', () => {
+                document.getElementById('btn-mode-sim-200').className = 'btn-roblox bg-purple-600 text-white font-bold p-3 rounded-2xl border-3 border-purple-800 text-left text-xs';
+                document.getElementById('btn-mode-online-real').className = 'btn-roblox bg-slate-100 text-slate-800 font-bold p-3 rounded-2xl border-3 border-slate-300 text-left text-xs';
+                document.getElementById('mabar-online-config-box').classList.add('hidden');
+            });
+
+            document.getElementById('btn-host-online-room').addEventListener('click', startOnlineHostRoom);
+            document.getElementById('btn-join-online-room').addEventListener('click', joinOnlineClientRoom);
+
+            document.getElementById('btn-start-mabar').addEventListener('click', () => {
+                cleanupNetworkSession();
+                startMabarSession('offline', true);
+            });
+            document.getElementById('btn-mabar-play-again').addEventListener('click', () => {
+                startMabarSession(gameState.mabarMode, gameState.mabarWithBots);
+            });
+            document.getElementById('btn-mabar-exit').addEventListener('click', () => {
+                cleanupNetworkSession();
+                document.getElementById('mabar-result-modal').classList.add('hidden');
+                gameState.modalOpen = false;
+            });
+
+            // Pause & Respawn
+            document.getElementById('btn-hud-pause').addEventListener('click', () => {
+                gameState.paused = true;
+                document.getElementById('pause-modal').classList.remove('hidden');
+            });
+            document.getElementById('btn-resume-game').addEventListener('click', () => {
+                gameState.paused = false;
+                document.getElementById('pause-modal').classList.add('hidden');
+            });
+            document.getElementById('btn-tp-spawn').addEventListener('click', () => {
+                playerState.pos.set(0, 0, 12);
+                playerState.vel.set(0, 0, 0);
+                gameState.paused = false;
+                document.getElementById('pause-modal').classList.add('hidden');
+                showToast('🏠 Kembali ke Alun-Alun Utama!');
+            });
+            document.getElementById('btn-change-grade-menu').addEventListener('click', () => {
+                gameState.paused = false;
+                gameState.started = false;
+                document.getElementById('pause-modal').classList.add('hidden');
+                document.getElementById('hud-layer').classList.add('hidden');
+                document.getElementById('start-screen-modal').classList.remove('hidden');
+            });
+            document.getElementById('btn-respawn-now').addEventListener('click', () => {
+                playerData.hp = playerData.maxHp;
+                playerState.pos.set(0, 0, 12);
+                playerState.vel.set(0, 0, 0);
+                playerState.invulnTimer = 2.0;
+                updateHUD();
+                document.getElementById('gameover-modal').classList.add('hidden');
+                gameState.modalOpen = false;
+                showToast('❤️ HP Penuh! Kembali berpetualang!');
+            });
+        }
+
+        let prevFrameTime = 0;
+        let minimapTick = 0;
+
+        function animate(time = 0) {
+            requestAnimationFrame(animate);
+            const dt = Math.min((time - prevFrameTime) / 1000, 0.05);
+            prevFrameTime = time;
+
+            if (!gameState.started) {
+                // Kamera orbit panorama dunia saat di Start Screen
+                const angle = time * 0.0003;
+                camera.position.set(Math.sin(angle) * 55, 26, Math.cos(angle) * 55);
+                camera.lookAt(0, 3, -15);
+            } else {
+                updatePlayerMovement(dt);
+                updateEnemiesAI(dt, time);
+                updateMabarSimulation(dt, time);
+
+                minimapTick += dt;
+                if (minimapTick >= 0.1) {
+                    minimapTick = 0;
+                    drawMinimap();
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        window.onload = function () {
+            loadSavedData();
+            initWorld();
+            setupControlsAndEvents();
+            animate();
+        };
+    </script>
+</body>
+</html>

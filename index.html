@@ -2,7 +2,10 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>EduBlox Nusantara 3D - Dunia Belajar Roblox SD</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -19,17 +22,35 @@
             overflow: hidden;
             user-select: none;
             -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior: none;
             background-color: #38bdf8;
+            width: 100vw;
+            height: 100dvh;
         }
         #game-canvas {
             display: block;
             width: 100vw;
-            height: 100vh;
+            height: 100dvh;
             touch-action: none;
+        }
+        .safe-top {
+            padding-top: max(0.65rem, env(safe-area-inset-top));
+        }
+        .safe-bottom {
+            padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+        }
+        .safe-left {
+            padding-left: max(0.65rem, env(safe-area-inset-left));
+        }
+        .safe-right {
+            padding-right: max(0.65rem, env(safe-area-inset-right));
         }
         .btn-roblox {
             transition: transform 0.08s ease, box-shadow 0.08s ease;
-            box-shadow: 0 5px 0 rgba(15, 23, 42, 0.28);
+            box-shadow: 0 4px 0 rgba(15, 23, 42, 0.28);
+            touch-action: manipulation;
         }
         .btn-roblox:active:not(:disabled) {
             transform: translateY(3px);
@@ -57,7 +78,7 @@
         ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 999px; }
     </style>
 </head>
-<body class="relative w-screen h-screen overflow-hidden">
+<body class="relative w-screen h-[100dvh] overflow-hidden">
 
     <!-- Canvas 3D Utama -->
     <canvas id="game-canvas"></canvas>
@@ -70,67 +91,67 @@
     <!-- ======================================================================== -->
     <div id="hud-layer" class="hidden fixed inset-0 pointer-events-none z-20">
         <!-- BAR KIRI ATAS: Profil, Badge Kelas, HP, Stamina, XP, Level, Koin -->
-        <div class="fixed top-3 left-3 flex flex-col gap-2 pointer-events-auto max-w-[330px] sm:max-w-md">
-            <div class="glass-hud rounded-2xl p-3 text-white shadow-xl">
-                <div class="flex items-center justify-between gap-2 mb-2">
-                    <div class="flex items-center gap-2">
-                        <div class="w-10 h-10 rounded-xl bg-amber-400 text-amber-950 font-bold flex items-center justify-center text-xl border-2 border-white">
+        <div class="fixed top-0 left-0 safe-top safe-left flex flex-col gap-1.5 pointer-events-auto max-w-[235px] sm:max-w-md">
+            <div class="glass-hud rounded-2xl p-2 sm:p-3 text-white shadow-xl">
+                <div class="flex flex-wrap items-center justify-between gap-1.5 mb-1.5 sm:mb-2">
+                    <div class="flex items-center gap-1.5 sm:gap-2">
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-amber-400 text-amber-950 font-bold flex items-center justify-center text-base sm:text-xl border-2 border-white shrink-0">
                             🧱
                         </div>
-                        <div>
-                            <div class="flex items-center gap-1.5">
-                                <span id="hud-name" class="font-bold text-sm md:text-base">Budi</span>
-                                <span id="hud-grade-badge" class="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg border border-blue-300">Kelas 4</span>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-1">
+                                <span id="hud-name" class="font-bold text-xs sm:text-base truncate max-w-[72px] sm:max-w-[120px]">Budi</span>
+                                <span id="hud-grade-badge" class="bg-blue-500 text-white text-[10px] sm:text-xs font-bold px-1.5 py-0.5 rounded-lg border border-blue-300 shrink-0">Kelas 4</span>
                             </div>
-                            <div class="flex items-center gap-2 text-xs text-amber-300 font-bold">
+                            <div class="flex items-center gap-1.5 text-[10px] sm:text-xs text-amber-300 font-bold">
                                 <span id="hud-level">Lv. 1</span>
                                 <span>•</span>
-                                <span id="hud-coins">🪙 0 Koin</span>
+                                <span id="hud-coins">🪙 0</span>
                             </div>
                         </div>
                     </div>
                     <!-- Tombol Aksi Cepat -->
                     <div class="flex items-center gap-1">
-                        <button id="btn-hud-rapor" title="Rapor Belajar" class="btn-roblox bg-emerald-500 hover:bg-emerald-400 text-white font-bold px-2.5 py-1.5 rounded-xl text-xs border border-emerald-200">
-                            📊 Rapor
+                        <button id="btn-hud-rapor" title="Rapor Belajar" class="btn-roblox bg-emerald-500 hover:bg-emerald-400 text-white font-bold px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl text-[10px] sm:text-xs border border-emerald-200">
+                            📊 <span class="hidden xs:inline">Rapor</span>
                         </button>
-                        <button id="btn-hud-klasmen" title="Klasmen" class="btn-roblox bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold px-2.5 py-1.5 rounded-xl text-xs border border-amber-200">
-                            🏆 Klasmen
+                        <button id="btn-hud-klasmen" title="Klasmen" class="btn-roblox bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl text-[10px] sm:text-xs border border-amber-200">
+                            🏆 <span class="hidden xs:inline">Klasmen</span>
                         </button>
-                        <button id="btn-hud-mabar" title="Mabar 200 Murid" class="btn-roblox bg-purple-600 hover:bg-purple-500 text-white font-bold px-2.5 py-1.5 rounded-xl text-xs border border-purple-300">
+                        <button id="btn-hud-mabar" title="Mabar 200 Murid" class="btn-roblox bg-purple-600 hover:bg-purple-500 text-white font-bold px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl text-[10px] sm:text-xs border border-purple-300">
                             🔥 Mabar
                         </button>
                     </div>
                 </div>
 
                 <!-- HP Bar -->
-                <div class="mb-1.5">
-                    <div class="flex justify-between text-[11px] font-bold mb-0.5">
+                <div class="mb-1">
+                    <div class="flex justify-between text-[10px] sm:text-[11px] font-bold mb-0.5">
                         <span class="text-rose-300">❤️ HP</span>
                         <span id="hud-hp-text">100 / 100</span>
                     </div>
-                    <div class="w-full h-3 bg-slate-800 rounded-full overflow-hidden border border-white/20">
+                    <div class="w-full h-2.5 sm:h-3 bg-slate-800 rounded-full overflow-hidden border border-white/20">
                         <div id="hud-hp-bar" class="h-full bg-gradient-to-r from-rose-500 to-red-400 transition-all duration-150" style="width: 100%"></div>
                     </div>
                 </div>
 
                 <!-- Stamina & XP Bar Sejajar -->
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-2 gap-1.5 sm:gap-2">
                     <div>
-                        <div class="flex justify-between text-[10px] font-bold mb-0.5">
+                        <div class="flex justify-between text-[9px] sm:text-[10px] font-bold mb-0.5">
                             <span class="text-sky-300">⚡ Stamina</span>
                             <span id="hud-stamina-text">100%</span>
                         </div>
-                        <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                        <div class="w-full h-1.5 sm:h-2 bg-slate-800 rounded-full overflow-hidden">
                             <div id="hud-stamina-bar" class="h-full bg-sky-400 transition-all duration-75" style="width: 100%"></div>
                         </div>
                     </div>
                     <div>
-                        <div class="flex justify-between text-[10px] font-bold mb-0.5">
+                        <div class="flex justify-between text-[9px] sm:text-[10px] font-bold mb-0.5">
                             <span class="text-amber-300">✨ XP</span>
                             <span id="hud-xp-text">0 / 100</span>
                         </div>
-                        <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                        <div class="w-full h-1.5 sm:h-2 bg-slate-800 rounded-full overflow-hidden">
                             <div id="hud-xp-bar" class="h-full bg-amber-400 transition-all duration-200" style="width: 0%"></div>
                         </div>
                     </div>
@@ -138,12 +159,12 @@
             </div>
 
             <!-- PANEL QUEST & LOKASI ZONA -->
-            <div class="glass-hud rounded-2xl p-2.5 text-white text-xs shadow-lg">
-                <div class="flex items-center justify-between mb-1">
-                    <span id="hud-zone-label" class="font-bold text-cyan-300">🗺️ Alun-Alun Nusantara</span>
-                    <button id="btn-hud-pause" class="bg-white/15 hover:bg-white/25 px-2 py-0.5 rounded text-[11px] font-bold">⏸️ Menu (ESC)</button>
+            <div class="glass-hud rounded-2xl p-2 sm:p-2.5 text-white text-[11px] sm:text-xs shadow-lg">
+                <div class="flex items-center justify-between gap-1 mb-0.5 sm:mb-1">
+                    <span id="hud-zone-label" class="font-bold text-cyan-300 truncate">🗺️ Alun-Alun Nusantara</span>
+                    <button id="btn-hud-pause" class="bg-white/15 hover:bg-white/25 px-2 py-0.5 rounded text-[10px] sm:text-[11px] font-bold shrink-0">⏸️ Menu</button>
                 </div>
-                <p id="hud-quest-text" class="text-slate-200 leading-snug">
+                <p id="hud-quest-text" class="hidden sm:block text-slate-200 leading-snug">
                     Jelajahi 6 Zona Belajar, kalahkan monster pengganggu, atau bicara dengan Guru untuk menjawab kuis!
                 </p>
             </div>
@@ -161,25 +182,25 @@
         </div>
 
         <!-- KANAN ATAS: MINIMAP 2D REAL-TIME & TELEPORT ZONA -->
-        <div class="fixed top-3 right-3 flex flex-col items-end gap-2 pointer-events-auto">
-            <div class="glass-hud p-2 rounded-2xl shadow-xl flex flex-col items-center">
-                <canvas id="minimap-canvas" width="150" height="150" class="rounded-xl border-2 border-white/40 bg-emerald-900"></canvas>
-                <span class="text-[10px] text-white/90 font-bold mt-1">🧭 Peta Dunia (±300m)</span>
+        <div class="fixed top-0 right-0 safe-top safe-right flex flex-col items-end gap-1.5 pointer-events-auto">
+            <div class="glass-hud p-1.5 sm:p-2 rounded-2xl shadow-xl flex flex-col items-center">
+                <canvas id="minimap-canvas" width="140" height="140" class="w-24 h-24 sm:w-36 sm:h-36 rounded-xl border-2 border-white/40 bg-emerald-900"></canvas>
+                <span class="text-[9px] sm:text-[10px] text-white/90 font-bold mt-0.5 sm:mt-1">🧭 Peta Dunia</span>
             </div>
 
             <!-- PANEL LIVE MABAR 200 MURID (MUNCUL SAAT MODE MABAR AKTIF) -->
-            <div id="mabar-live-panel" class="hidden glass-hud rounded-2xl p-3 text-white w-64 shadow-2xl border-2 border-purple-400">
-                <div class="flex justify-between items-center border-b border-white/20 pb-1.5 mb-1.5">
-                    <span id="mabar-panel-title" class="font-bold text-xs text-purple-300">🔥 MABAR LIVE</span>
-                    <span id="mabar-timer-badge" class="bg-rose-500 text-white font-bold text-xs px-2 py-0.5 rounded-lg">05:00</span>
+            <div id="mabar-live-panel" class="hidden glass-hud rounded-2xl p-2 sm:p-3 text-white w-48 sm:w-64 shadow-2xl border-2 border-purple-400">
+                <div class="flex justify-between items-center border-b border-white/20 pb-1 mb-1">
+                    <span id="mabar-panel-title" class="font-bold text-[10px] sm:text-xs text-purple-300 truncate">🔥 MABAR LIVE</span>
+                    <span id="mabar-timer-badge" class="bg-rose-500 text-white font-bold text-[10px] sm:text-xs px-1.5 py-0.5 rounded-lg">05:00</span>
                 </div>
-                <div id="mabar-online-status" class="text-[10px] text-emerald-300 font-bold mb-1.5 bg-emerald-950/60 px-2 py-0.5 rounded">
+                <div id="mabar-online-status" class="text-[9px] sm:text-[10px] text-emerald-300 font-bold mb-1 bg-emerald-950/60 px-1.5 py-0.5 rounded truncate">
                     🌐 Terhubung: 1 Siswa Online
                 </div>
-                <div id="mabar-top10-list" class="space-y-1 text-[11px] max-h-44 overflow-y-auto">
+                <div id="mabar-top10-list" class="space-y-0.5 text-[10px] sm:text-[11px] max-h-24 sm:max-h-44 overflow-y-auto">
                     <!-- Top 10 Mabar -->
                 </div>
-                <div id="mabar-self-rank" class="mt-2 pt-1.5 border-t border-white/20 text-xs font-bold text-amber-300 flex justify-between">
+                <div id="mabar-self-rank" class="mt-1 pt-1 border-t border-white/20 text-[10px] sm:text-xs font-bold text-amber-300 flex justify-between">
                     <span>Peringkatmu: #1</span>
                     <span>0 XP</span>
                 </div>
@@ -187,20 +208,18 @@
         </div>
 
         <!-- PROMPT INTERAKSI DI TENGAH BAWAH -->
-        <div id="interaction-prompt" class="hidden fixed bottom-24 left-1/2 -translate-x-1/2 pointer-events-auto">
-            <button id="btn-interact-action" class="btn-roblox animate-bounce bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold px-5 py-2.5 rounded-2xl border-4 border-white shadow-2xl text-sm md:text-base">
-                💬 Tekan [E] / Klik untuk Bicara
+        <div id="interaction-prompt" class="hidden fixed bottom-36 sm:bottom-24 left-1/2 -translate-x-1/2 pointer-events-auto z-30 w-max max-w-[90vw]">
+            <button id="btn-interact-action" class="btn-roblox animate-bounce bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold px-4 py-2.5 sm:px-5 rounded-2xl border-3 sm:border-4 border-white shadow-2xl text-xs sm:text-base">
+                💬 Ketuk untuk Bicara
             </button>
         </div>
 
-        <!-- BAR AKSI BAWAH (DESKTOP & MOBILE) -->
-        <div class="fixed bottom-3 left-3 right-3 flex justify-between items-end pointer-events-none">
-            <!-- Virtual D-Pad untuk Mobile/Touch -->
-            <div class="sm:hidden relative w-32 h-32 pointer-events-auto">
-                <button id="touch-up" class="w-10 h-10 bg-white/80 rounded-xl font-bold absolute top-0 left-1/2 -translate-x-1/2 shadow">▲</button>
-                <button id="touch-down" class="w-10 h-10 bg-white/80 rounded-xl font-bold absolute bottom-0 left-1/2 -translate-x-1/2 shadow">▼</button>
-                <button id="touch-left" class="w-10 h-10 bg-white/80 rounded-xl font-bold absolute left-0 top-1/2 -translate-y-1/2 shadow">◀</button>
-                <button id="touch-right" class="w-10 h-10 bg-white/80 rounded-xl font-bold absolute right-0 top-1/2 -translate-y-1/2 shadow">▶</button>
+        <!-- BAR AKSI BAWAH (DESKTOP & MOBILE ANDROID/iOS) -->
+        <div class="fixed bottom-0 left-0 right-0 safe-bottom safe-left safe-right flex justify-between items-end pointer-events-none">
+            <!-- Virtual Analog Joystick 360° untuk Mobile Android & iOS -->
+            <div id="mobile-joystick-zone" class="sm:hidden relative w-32 h-32 rounded-full bg-slate-900/35 border-2 border-white/45 backdrop-blur-xs pointer-events-auto flex items-center justify-center touch-none">
+                <div class="w-16 h-16 rounded-full border border-white/25 pointer-events-none"></div>
+                <div id="mobile-joystick-knob" class="w-12 h-12 rounded-full bg-white/90 border-3 border-blue-500 shadow-lg absolute pointer-events-none transition-transform duration-75"></div>
             </div>
 
             <!-- Hint Kontrol Desktop -->
@@ -216,13 +235,19 @@
                 <span><b>E</b> Bicara Guru</span>
             </div>
 
-            <!-- Tombol Serang & Lompat Sentuh -->
-            <div class="flex gap-2 pointer-events-auto">
-                <button id="btn-action-attack" class="btn-roblox bg-rose-500 hover:bg-rose-400 text-white font-bold w-14 h-14 sm:w-auto sm:h-auto sm:px-4 sm:py-2.5 rounded-2xl border-3 border-white shadow-xl flex items-center justify-center gap-1.5 text-sm">
-                    <span>⚔️</span> <span class="hidden sm:inline">Serang (F)</span>
+            <!-- Tombol Lari, Serang & Lompat Sentuh (Ergonomis untuk Ibu Jari HP) -->
+            <div class="flex items-end gap-2 sm:gap-2.5 pointer-events-auto">
+                <button id="btn-action-sprint" class="sm:hidden btn-roblox bg-sky-500/90 text-white font-bold w-12 h-12 rounded-2xl border-2 border-white shadow-xl flex flex-col items-center justify-center text-xs leading-none">
+                    <span>⚡</span>
+                    <span class="text-[9px] mt-0.5">Lari</span>
                 </button>
-                <button id="btn-action-jump" class="sm:hidden btn-roblox bg-emerald-500 text-white font-bold w-14 h-14 rounded-2xl border-3 border-white shadow-xl flex items-center justify-center text-lg">
-                    ⬆️
+                <button id="btn-action-attack" class="btn-roblox bg-rose-500 hover:bg-rose-400 text-white font-bold w-14 h-14 sm:w-auto sm:h-auto sm:px-4 sm:py-2.5 rounded-2xl border-3 border-white shadow-xl flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 text-sm">
+                    <span class="text-lg sm:text-base">⚔️</span>
+                    <span class="text-[10px] sm:text-sm font-bold">Serang</span>
+                </button>
+                <button id="btn-action-jump" class="sm:hidden btn-roblox bg-emerald-500 text-white font-bold w-16 h-16 rounded-2xl border-3 border-white shadow-xl flex flex-col items-center justify-center text-lg leading-none">
+                    <span>⬆️</span>
+                    <span class="text-[10px] font-bold mt-0.5">Lompat</span>
                 </button>
             </div>
         </div>
@@ -274,8 +299,8 @@
             <!-- Instruksi Cara Main -->
             <div class="bg-sky-50 border-2 border-sky-200 rounded-2xl p-3.5 mb-5 text-xs text-slate-700 space-y-1">
                 <div class="font-bold text-sky-900 text-sm mb-1">📖 Cara Bermain:</div>
-                <p>• <b>Gerak & Kamera:</b> Gunakan <b>WASD / Panah</b> untuk berjalan, <b>Shift</b> untuk lari, <b>Spasi</b> untuk lompat, seret <b>Mouse</b> untuk memutar kamera, dan <b>Scroll</b> untuk zoom.</p>
-                <p>• <b>Belajar & Bertarung:</b> Kunjungi 6 Zona (Matematika, IPAS, B. Indonesia, PKN, Koding, AI). Tekan <b>[E]</b> dekat Guru untuk membaca materi & kuis, atau <b>Klik Kiri / [F]</b> untuk mengalahkan monster dan memicu kuis!</p>
+                <p>• <b>HP Android / iOS:</b> Gunakan <b>Joystick Kiri</b> untuk jalan, usap layar untuk putar kamera (cubit 2 jari untuk zoom), dan tekan tombol <b>Serang / Lompat</b> di kanan.</p>
+                <p>• <b>Laptop / PC:</b> Gunakan <b>WASD / Panah</b> untuk jalan, <b>Shift</b> lari, <b>Spasi</b> lompat, seret <b>Mouse</b> untuk kamera, <b>[E]</b> bicara Guru, dan <b>Klik Kiri / [F]</b> serang monster.</p>
             </div>
 
             <button id="btn-start-play" disabled class="btn-roblox w-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-4 rounded-2xl border-4 border-emerald-700 text-lg md:text-xl">
@@ -1069,6 +1094,7 @@
         };
 
         const inputKeys = { w: false, a: false, s: false, d: false, shift: false };
+        const touchAnalog = { active: false, x: 0, y: 0, touchId: null };
         let camYaw = 0;
         let camPitch = 0.38;
         let camDist = 11;
@@ -2486,12 +2512,7 @@
         let nearbyNPC = null;
 
         function updatePlayerMovement(dt) {
-            if (!gameState.started || gameState.paused || gameState.modalOpen) return;
-
-            if (playerState.attackCooldown > 0) playerState.attackCooldown -= dt;
-            if (playerState.invulnTimer > 0) playerState.invulnTimer -= dt;
-
-            // Input gerak
+            // Input gerak (Mendukung Keyboard + Analog Joystick HP)
             let forward = 0;
             let right = 0;
             if (inputKeys.w) forward += 1;
@@ -2499,7 +2520,12 @@
             if (inputKeys.d) right += 1;
             if (inputKeys.a) right -= 1;
 
-            const isMoving = (forward !== 0 || right !== 0);
+            if (touchAnalog.active) {
+                forward = -touchAnalog.y;
+                right = touchAnalog.x;
+            }
+
+            const isMoving = (Math.hypot(forward, right) > 0.12);
             const wantsSprint = inputKeys.shift && isMoving && playerData.stamina > 2;
 
             if (wantsSprint) {
@@ -2757,18 +2783,131 @@
                 camDist = Math.max(4.5, Math.min(26, camDist + e.deltaY * 0.012));
             }, { passive: true });
 
-            // Tombol Sentuh & UI Modals
-            const bindTouch = (id, key) => {
-                const el = document.getElementById(id);
-                el.addEventListener('touchstart', (e) => { e.preventDefault(); inputKeys[key] = true; });
-                el.addEventListener('touchend', (e) => { e.preventDefault(); inputKeys[key] = false; });
+            // Kontrol Kamera Sentuh (1 Jari Putar Kamera 360°, 2 Jari Pinch-to-Zoom untuk Android & iOS)
+            let camTouchId = null;
+            let prevTouchCam = { x: 0, y: 0 };
+            let prevPinchDist = null;
+
+            canvas.addEventListener('touchstart', (e) => {
+                if (!gameState.started || gameState.paused || gameState.modalOpen) return;
+                if (e.touches.length === 2) {
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    prevPinchDist = Math.hypot(dx, dy);
+                } else if (e.touches.length === 1 && camTouchId === null) {
+                    const t = e.changedTouches[0];
+                    camTouchId = t.identifier;
+                    prevTouchCam = { x: t.clientX, y: t.clientY };
+                }
+            }, { passive: true });
+
+            canvas.addEventListener('touchmove', (e) => {
+                if (!gameState.started || gameState.paused || gameState.modalOpen) return;
+                if (e.touches.length === 2 && prevPinchDist !== null) {
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    const dist = Math.hypot(dx, dy);
+                    camDist = Math.max(4.5, Math.min(26, camDist - (dist - prevPinchDist) * 0.04));
+                    prevPinchDist = dist;
+                    return;
+                }
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    const t = e.changedTouches[i];
+                    if (t.identifier === camTouchId) {
+                        camYaw -= (t.clientX - prevTouchCam.x) * 0.0085;
+                        camPitch = Math.max(0.1, Math.min(1.15, camPitch + (t.clientY - prevTouchCam.y) * 0.007));
+                        prevTouchCam = { x: t.clientX, y: t.clientY };
+                    }
+                }
+            }, { passive: true });
+
+            const endCamTouch = (e) => {
+                if (e.touches.length < 2) prevPinchDist = null;
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    if (e.changedTouches[i].identifier === camTouchId) {
+                        camTouchId = null;
+                    }
+                }
             };
-            bindTouch('touch-up', 'w');
-            bindTouch('touch-down', 's');
-            bindTouch('touch-left', 'a');
-            bindTouch('touch-right', 'd');
+            canvas.addEventListener('touchend', endCamTouch, { passive: true });
+            canvas.addEventListener('touchcancel', endCamTouch, { passive: true });
+
+            // Analog Joystick Virtual 360° (Android & iOS)
+            const joyZone = document.getElementById('mobile-joystick-zone');
+            const joyKnob = document.getElementById('mobile-joystick-knob');
+            const maxJoyRadius = 38;
+
+            function updateJoystickPosition(clientX, clientY) {
+                const rect = joyZone.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                let dx = clientX - centerX;
+                let dy = clientY - centerY;
+                const dist = Math.hypot(dx, dy);
+                if (dist > maxJoyRadius) {
+                    dx = (dx / dist) * maxJoyRadius;
+                    dy = (dy / dist) * maxJoyRadius;
+                }
+                joyKnob.style.transform = `translate(${dx}px, ${dy}px)`;
+                touchAnalog.x = dx / maxJoyRadius;
+                touchAnalog.y = dy / maxJoyRadius;
+            }
+
+            joyZone.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (touchAnalog.touchId !== null) return;
+                const t = e.changedTouches[0];
+                touchAnalog.touchId = t.identifier;
+                touchAnalog.active = true;
+                updateJoystickPosition(t.clientX, t.clientY);
+            }, { passive: false });
+
+            joyZone.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    const t = e.changedTouches[i];
+                    if (t.identifier === touchAnalog.touchId) {
+                        updateJoystickPosition(t.clientX, t.clientY);
+                    }
+                }
+            }, { passive: false });
+
+            const resetJoystick = (e) => {
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    if (e.changedTouches[i].identifier === touchAnalog.touchId) {
+                        touchAnalog.touchId = null;
+                        touchAnalog.active = false;
+                        touchAnalog.x = 0;
+                        touchAnalog.y = 0;
+                        joyKnob.style.transform = 'translate(0px, 0px)';
+                    }
+                }
+            };
+            joyZone.addEventListener('touchend', resetJoystick);
+            joyZone.addEventListener('touchcancel', resetJoystick);
+
+            // Tombol Lari, Serang & Lompat Sentuh
+            const sprintBtn = document.getElementById('btn-action-sprint');
+            sprintBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                inputKeys.shift = true;
+                sprintBtn.classList.add('bg-amber-400', 'text-amber-950');
+            }, { passive: false });
+            const endSprint = () => {
+                inputKeys.shift = false;
+                sprintBtn.classList.remove('bg-amber-400', 'text-amber-950');
+            };
+            sprintBtn.addEventListener('touchend', endSprint);
+            sprintBtn.addEventListener('touchcancel', endSprint);
 
             document.getElementById('btn-action-attack').addEventListener('click', triggerPlayerAttack);
+            document.getElementById('btn-action-jump').addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (playerState.isGrounded) {
+                    playerState.vel.y = playerState.jumpForce;
+                    playerState.isGrounded = false;
+                }
+            }, { passive: false });
             document.getElementById('btn-action-jump').addEventListener('click', () => {
                 if (playerState.isGrounded) {
                     playerState.vel.y = playerState.jumpForce;
